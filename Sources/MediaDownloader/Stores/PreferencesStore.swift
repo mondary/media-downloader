@@ -2,6 +2,8 @@ import Foundation
 
 final class PreferencesStore {
     private let downloadFolderKey = "downloadFolderPath"
+    private let cookiesPathKey = "cookiesFilePath"
+    private let cookiesBrowserKey = "cookiesBrowser"
     private let hotKeyPrefix = "hotKeyShortcut."
     private let defaults: UserDefaults
 
@@ -22,6 +24,21 @@ final class PreferencesStore {
         set {
             defaults.set(newValue.path, forKey: downloadFolderKey)
         }
+    }
+
+    var cookiesPath: String {
+        get { defaults.string(forKey: cookiesPathKey) ?? "" }
+        set { defaults.set(newValue, forKey: cookiesPathKey) }
+    }
+
+    var cookiesBrowser: String {
+        get { defaults.string(forKey: cookiesBrowserKey) ?? "chrome" }
+        set { defaults.set(newValue, forKey: cookiesBrowserKey) }
+    }
+
+    var autoCopyAfterDownload: Bool {
+        get { defaults.object(forKey: "autoCopyAfterDownload") as? Bool ?? true }
+        set { defaults.set(newValue, forKey: "autoCopyAfterDownload") }
     }
 
     func hotKeyShortcut(for action: HotKeyAction) -> HotKeyShortcut {

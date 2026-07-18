@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_NAME="MediaDownloader"
-BUNDLE_ID="${BUNDLE_ID:-com.pixelpoint.MediaDownloader}"
+APP_NAME="PKMediaDownloader"
+BUNDLE_ID="${BUNDLE_ID:-com.pkmediadownloader.app}"
 MIN_SYSTEM_VERSION="14.0"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

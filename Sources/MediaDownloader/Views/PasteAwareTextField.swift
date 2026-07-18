@@ -24,7 +24,18 @@ struct PasteAwareTextField: NSViewRepresentable {
         textField.usesSingleLineMode = true
         textField.onPaste = onPaste
 
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didBecomeKeyNotification,
+            object: nil,
+            queue: .main
+        ) { [weak textField] _ in
+            guard let textField, textField.window != nil else { return }
+            textField.window?.makeKey()
+            textField.window?.makeFirstResponder(textField)
+        }
+
         DispatchQueue.main.async {
+            textField.window?.makeKey()
             textField.window?.makeFirstResponder(textField)
         }
 

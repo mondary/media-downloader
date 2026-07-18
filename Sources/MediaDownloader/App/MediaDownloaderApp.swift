@@ -28,8 +28,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self?.presentReadyWindow(activate: true)
     }
     private var hotKeyObserver: NSObjectProtocol?
+    private var mainWindowObserver: NSObjectProtocol?
+    private let menuBarController = MenuBarController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        menuBarController.setup()
+
         activationHotKey.registerActivationHotKey(preferences.hotKeyShortcut(for: .activateApp))
         hotKeyObserver = NotificationCenter.default.addObserver(
             forName: .mediaDownloaderHotKeysDidChange,
@@ -37,16 +41,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             queue: .main
         ) { [weak self] notification in
             guard notification.object as? HotKeyAction == .activateApp else { return }
-
             Task { @MainActor [weak self] in
                 self?.updateActivationHotKey()
             }
         }
+
+        mainWindowObserver = NotificationCenter.default.addObserver(
+            forName: .showMainWindow,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.presentReadyWindow(activate: true)
+            }
+        }
+
         presentReadyWindow(activate: true)
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
         presentReadyWindow(activate: false)
+        autoPasteClipboardURL()
     }
 
     func applicationDidResignActive(_ notification: Notification) {
@@ -61,6 +76,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
+    }
+
+    private func autoPasteClipboardURL() {
+        guard let clipboardString = NSPasteboard.general.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              URLValidator.looksLikeWebURL(clipboardString) else {
+            return
+        }
+
+        if model.inputText != clipboardString {
+            model.inputText = clipboardString
+        }
     }
 
     private func presentReadyWindow(activate: Bool) {
@@ -121,10 +147,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
-        window.isMovableByWindowBackground = false
+        window.isMovableByWindowBackground = true
         window.level = .normal
         window.collectionBehavior = [.moveToActiveSpace]
-        window.title = "Media Downloader"
+        window.title = "PKMediaDownloader"
         centerWindowOnCurrentDisplay(window)
 
         self.window = window
@@ -149,7 +175,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.isMovableByWindowBackground = true
         window.level = .normal
         window.collectionBehavior = [.moveToActiveSpace]
-        window.title = "Media Downloader Setup"
+        window.title = "PKMediaDownloader Setup"
 
         self.setupWindow = window
         return window

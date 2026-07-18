@@ -43,6 +43,20 @@ final class AppModel: ObservableObject {
         preferences.downloadFolder = url
     }
 
+    func selectCookiesFile() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.plainText, .data, .json]
+        panel.prompt = "Select Cookies File"
+
+        guard panel.runModal() == .OK, let url = panel.url else {
+            return
+        }
+
+        preferences.cookiesPath = url.path
+    }
+
     func handlePasteCandidate() {
         pasteTask?.cancel()
 
@@ -108,7 +122,7 @@ final class AppModel: ObservableObject {
             guard let self else { return }
 
             do {
-                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.1"
                 let result = try await updateChecker.check(currentVersion: currentVersion)
                 let downloadedUpdate: DownloadedUpdate?
 
@@ -200,15 +214,21 @@ final class AppModel: ObservableObject {
 
         isDownloading = true
         statusMessage = "Downloading..."
+        NotificationCenter.default.post(name: .downloadStarted, object: nil)
 
         do {
-            let result = try await downloader.download(sourceURL: sourceURL, destinationFolder: preferences.downloadFolder)
-            let thumbnailPath = try? await thumbnailGenerator.thumbnailPath(for: result.fileURL)
+            let cookies = preferences.cookiesPath.isEmpty ? nil : preferences.cookiesPath
+            let result = try await downloader.download(
+                sourceURL: sourceURL,
+                destinationFolder: preferences.downloadFolder,
+                cookiesPath: cookies,
+                cookiesBrowser: preferences.cookiesBrowser
+            )
             let item = DownloadItem(
                 sourceURL: sourceURL,
                 title: result.title,
                 filePath: result.fileURL.path,
-                thumbnailPath: thumbnailPath?.path,
+                thumbnailPath: nil,
                 createdAt: Date()
             )
 
@@ -218,11 +238,33 @@ final class AppModel: ObservableObject {
             activeTrimSession = ActiveTrimSession(item: item)
             inputText = ""
             statusMessage = "Downloaded and copied."
+            NotificationCenter.default.post(name: .downloadCompleted, object: nil, userInfo: ["title": result.title])
+            generateThumbnailInBackground(for: item)
         } catch {
             statusMessage = error.localizedDescription
+            NotificationCenter.default.post(name: .downloadFailed, object: nil, userInfo: ["error": error.localizedDescription])
         }
 
         isDownloading = false
+    }
+
+    private func generateThumbnailInBackground(for item: DownloadItem) {
+        Task { [weak self] in
+            guard let self, let thumbnailURL = try? await thumbnailGenerator.thumbnailPath(for: URL(fileURLWithPath: item.filePath)) else {
+                return
+            }
+
+            guard let index = history.firstIndex(where: { $0.id == item.id }) else { return }
+            history[index] = DownloadItem(
+                id: item.id,
+                sourceURL: item.sourceURL,
+                title: item.title,
+                filePath: item.filePath,
+                thumbnailPath: thumbnailURL.path,
+                createdAt: item.createdAt
+            )
+            historyStore.save(history)
+        }
     }
 
     private func presentUpdateResult(

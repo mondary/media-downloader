@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 
 @MainActor
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
@@ -9,20 +10,20 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         self.preferences = preferences
         self.onCheckForUpdates = onCheckForUpdates
 
-        let contentSize = NSSize(width: 560, height: 430)
+        let contentSize = NSSize(width: 520, height: 520)
         let window = NSWindow(
             contentRect: NSRect(origin: .zero, size: contentSize),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        window.title = "Settings"
+        window.title = "PKMediaDownloader — Settings"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
-        window.backgroundColor = SettingsColors.windowBackground
+        window.backgroundColor = NSColor(calibratedWhite: 0.11, alpha: 1)
         window.minSize = contentSize
-        window.maxSize = contentSize
+        window.maxSize = NSSize(width: 520, height: 800)
         window.collectionBehavior = [.moveToActiveSpace]
         window.standardWindowButton(.miniaturizeButton)?.isHidden = true
         window.standardWindowButton(.zoomButton)?.isHidden = true
@@ -30,24 +31,18 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         super.init(window: window)
 
         window.delegate = self
-        let viewController = NSViewController()
-        viewController.view = SettingsRootView(
-            frame: NSRect(origin: .zero, size: contentSize),
-            preferences: preferences,
-            onCheckForUpdates: onCheckForUpdates
+        let hosting = NSHostingView(
+            rootView: SettingsRootView(preferences: preferences, onCheckForUpdates: onCheckForUpdates)
+                .frame(width: contentSize.width, height: contentSize.height)
         )
-        window.contentViewController = viewController
+        window.contentView = hosting
     }
 
-    required init?(coder: NSCoder) {
-        nil
-    }
+    required init?(coder: NSCoder) { nil }
 
     func show() {
         guard let window else { return }
-        if !window.isVisible {
-            window.center()
-        }
+        if !window.isVisible { window.center() }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -57,417 +52,441 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     }
 }
 
-private enum SettingsColors {
-    static let windowBackground = NSColor(calibratedWhite: 0.145, alpha: 1)
-    static let cardBackground = NSColor(calibratedWhite: 0.155, alpha: 1)
-    static let cardBorder = NSColor(calibratedWhite: 1, alpha: 0.105)
-    static let separator = NSColor(calibratedWhite: 1, alpha: 0.095)
-    static let shortcutFill = NSColor(calibratedWhite: 1, alpha: 0.22)
-    static let shortcutBorder = NSColor(calibratedWhite: 1, alpha: 0.16)
-}
+// MARK: - SwiftUI Settings Root
 
-private final class SettingsRootView: NSView {
-    private enum Metrics {
-        static let contentWidth: CGFloat = 500
-        static let leading: CGFloat = 30
-        static let top: CGFloat = 52
-    }
+private struct SettingsRootView: View {
+    @ObservedObject var preferences: PreferencesStoreWrapper
+    let onCheckForUpdates: () -> Void
+    @State private var accessibilityGranted = AXIsProcessTrusted()
+    private let statusTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 
-    init(frame: NSRect, preferences: PreferencesStore, onCheckForUpdates: @escaping () -> Void) {
-        super.init(frame: frame)
-        wantsLayer = true
-        layer?.backgroundColor = SettingsColors.windowBackground.cgColor
-
-        let generalTitle = sectionTitle("General")
-        let generalCard = GeneralSettingsCard(onCheckForUpdates: onCheckForUpdates)
-        let shortcutsTitle = sectionTitle("Shortcuts")
-        let shortcutsCard = ShortcutSettingsCard(preferences: preferences)
-
-        [generalTitle, generalCard, shortcutsTitle, shortcutsCard].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            addSubview($0)
-        }
-
-        NSLayoutConstraint.activate([
-            generalTitle.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Metrics.leading),
-            generalTitle.topAnchor.constraint(equalTo: topAnchor, constant: Metrics.top),
-
-            generalCard.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Metrics.leading),
-            generalCard.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Metrics.leading),
-            generalCard.topAnchor.constraint(equalTo: generalTitle.bottomAnchor, constant: 22),
-            generalCard.heightAnchor.constraint(equalToConstant: 96),
-
-            shortcutsTitle.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Metrics.leading),
-            shortcutsTitle.topAnchor.constraint(equalTo: generalCard.bottomAnchor, constant: 30),
-
-            shortcutsCard.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Metrics.leading),
-            shortcutsCard.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Metrics.leading),
-            shortcutsCard.topAnchor.constraint(equalTo: shortcutsTitle.bottomAnchor, constant: 20),
-            shortcutsCard.heightAnchor.constraint(equalToConstant: 114)
-        ])
-    }
-
-    required init?(coder: NSCoder) {
-        nil
-    }
-
-    private func sectionTitle(_ title: String) -> NSTextField {
-        let label = NSTextField(labelWithString: title)
-        label.font = .systemFont(ofSize: 19, weight: .regular)
-        label.textColor = .labelColor
-        return label
-    }
-}
-
-private final class GeneralSettingsCard: NSView {
-    private let onCheckForUpdates: () -> Void
-
-    init(onCheckForUpdates: @escaping () -> Void) {
+    init(preferences: PreferencesStore, onCheckForUpdates: @escaping () -> Void) {
+        self.preferences = PreferencesStoreWrapper(preferences)
         self.onCheckForUpdates = onCheckForUpdates
-        super.init(frame: .zero)
-        setupCardLayer()
-
-        let icon = NSImageView()
-        icon.image = NSImage(named: NSImage.applicationIconName)
-        icon.imageScaling = .scaleProportionallyUpOrDown
-        icon.translatesAutoresizingMaskIntoConstraints = false
-
-        let title = NSTextField(labelWithString: "MediaDownloader")
-        title.font = .systemFont(ofSize: 17, weight: .regular)
-        title.textColor = .labelColor
-        title.translatesAutoresizingMaskIntoConstraints = false
-
-        let subtitle = NSTextField(labelWithString: Self.versionText)
-        subtitle.font = .systemFont(ofSize: 13, weight: .regular)
-        subtitle.textColor = .secondaryLabelColor
-        subtitle.translatesAutoresizingMaskIntoConstraints = false
-
-        let updateButton = SettingsButton(title: "Check for Updates")
-        updateButton.target = self
-        updateButton.action = #selector(checkForUpdates)
-        updateButton.translatesAutoresizingMaskIntoConstraints = false
-
-        [icon, title, subtitle, updateButton].forEach(addSubview)
-
-        NSLayoutConstraint.activate([
-            icon.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 22),
-            icon.centerYAnchor.constraint(equalTo: centerYAnchor),
-            icon.widthAnchor.constraint(equalToConstant: 52),
-            icon.heightAnchor.constraint(equalToConstant: 52),
-
-            title.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 16),
-            title.topAnchor.constraint(equalTo: icon.topAnchor, constant: 4),
-
-            subtitle.leadingAnchor.constraint(equalTo: title.leadingAnchor),
-            subtitle.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 4),
-
-            updateButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -24),
-            updateButton.centerYAnchor.constraint(equalTo: centerYAnchor),
-            updateButton.widthAnchor.constraint(equalToConstant: 210),
-            updateButton.heightAnchor.constraint(equalToConstant: 28)
-        ])
     }
 
-    required init?(coder: NSCoder) {
-        nil
-    }
-
-    @objc private func checkForUpdates() {
-        onCheckForUpdates()
-    }
-
-    private static var versionText: String {
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-        let normalizedVersion = version?.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        guard let normalizedVersion, !normalizedVersion.isEmpty else {
-            return "v0.2.0"
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                appSection
+                downloadSection
+                socialMediaSection
+                accessibilitySection
+                shortcutsSection
+                linksSection
+            }
+            .padding(24)
         }
-
-        return normalizedVersion.lowercased().hasPrefix("v")
-            ? normalizedVersion
-            : "v\(normalizedVersion)"
+        .background(Color(NSColor(calibratedWhite: 0.11, alpha: 1)))
+        .onChange(of: preferences.autoCopy) { _, _ in
+            preferences.saveAutoCopy()
+        }
+        .onChange(of: preferences.cookiesPath) { _, _ in
+            preferences.saveCookiesPath()
+        }
+        .onChange(of: preferences.cookiesBrowser) { _, _ in
+            preferences.saveCookiesBrowser()
+        }
+        .onReceive(statusTimer) { _ in
+            accessibilityGranted = AXIsProcessTrusted()
+        }
     }
-}
 
-private final class ShortcutSettingsCard: NSView {
-    init(preferences: PreferencesStore) {
-        super.init(frame: .zero)
-        setupCardLayer()
+    // MARK: - App Section
 
-        let stack = NSStackView()
-        stack.orientation = .vertical
-        stack.spacing = 0
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(stack)
+    private var appSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Application")
+                .font(.headline)
 
-        NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
-            stack.topAnchor.constraint(equalTo: topAnchor),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.down.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.purple)
 
-        for (index, action) in HotKeyAction.allCases.enumerated() {
-            stack.addArrangedSubview(ShortcutSettingsRow(
-                action: action,
-                shortcut: preferences.hotKeyShortcut(for: action),
-                showsSeparator: index < HotKeyAction.allCases.count - 1,
-                onRecord: { shortcut in
-                    preferences.setHotKeyShortcut(shortcut, for: action)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("PKMediaDownloader")
+                        .font(.title3.weight(.semibold))
+                    Text("v1.2026.1 — Native macOS video downloader")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-            ))
+
+                Spacer()
+
+                Button("Check for Updates") { onCheckForUpdates() }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+            }
+            .padding(14)
+            .background(cardBackground)
         }
     }
 
-    required init?(coder: NSCoder) {
-        nil
-    }
-}
+    // MARK: - Download Section
 
-private final class ShortcutSettingsRow: NSView {
-    init(
-        action: HotKeyAction,
-        shortcut: HotKeyShortcut,
-        showsSeparator: Bool,
-        onRecord: @escaping (HotKeyShortcut) -> Void
-    ) {
-        super.init(frame: .zero)
+    private var downloadSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Download")
+                .font(.headline)
 
-        let title = NSTextField(labelWithString: action.title.replacingOccurrences(of: ":", with: ""))
-        title.font = .systemFont(ofSize: 13, weight: .regular)
-        title.textColor = .labelColor
-        title.translatesAutoresizingMaskIntoConstraints = false
+            HStack(spacing: 12) {
+                Image(systemName: "folder")
+                    .font(.system(size: 16))
+                    .frame(width: 24)
+                    .foregroundStyle(.secondary)
 
-        let recorder = HotKeyRecorderButton(shortcut: shortcut, onRecord: onRecord)
-        recorder.translatesAutoresizingMaskIntoConstraints = false
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Save to")
+                        .font(.subheadline.weight(.medium))
+                    Text(preferences.downloadFolder.path)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
 
-        addSubview(title)
-        addSubview(recorder)
+                Spacer()
 
-        var constraints: [NSLayoutConstraint] = [
-            heightAnchor.constraint(equalToConstant: 38),
-            title.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 1),
-            title.centerYAnchor.constraint(equalTo: centerYAnchor),
+                Button("Change…") { preferences.chooseDownloadFolder() }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+            }
 
-            recorder.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            recorder.centerYAnchor.constraint(equalTo: centerYAnchor),
-            recorder.widthAnchor.constraint(equalToConstant: 120),
-            recorder.heightAnchor.constraint(equalToConstant: 24)
-        ]
+            Divider().overlay(Color.white.opacity(0.08))
 
-        if showsSeparator {
-            let separator = NSView()
-            separator.wantsLayer = true
-            separator.layer?.backgroundColor = SettingsColors.separator.cgColor
-            separator.translatesAutoresizingMaskIntoConstraints = false
-            addSubview(separator)
-            constraints.append(contentsOf: [
-                separator.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 1),
-                separator.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-                separator.bottomAnchor.constraint(equalTo: bottomAnchor),
-                separator.heightAnchor.constraint(equalToConstant: 1)
-            ])
+            HStack(spacing: 12) {
+                Image(systemName: "doc.on.clipboard")
+                    .font(.system(size: 16))
+                    .frame(width: 24)
+                    .foregroundStyle(.secondary)
+
+                Text("Auto-copy to clipboard")
+                    .font(.subheadline.weight(.medium))
+
+                Spacer()
+
+                Toggle("", isOn: $preferences.autoCopy)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+            }
         }
-
-        NSLayoutConstraint.activate(constraints)
+        .padding(14)
+        .background(cardBackground)
     }
 
-    required init?(coder: NSCoder) {
-        nil
+    // MARK: - Social Media Section
+
+    private var socialMediaSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Social Media Auth")
+                .font(.headline)
+
+            Text("Your logged-in browser session is used automatically for Instagram, X/Twitter, and TikTok.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 12) {
+                Image(systemName: "globe")
+                    .font(.system(size: 16))
+                    .frame(width: 24)
+                    .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Browser session")
+                        .font(.subheadline.weight(.medium))
+                    Text("Use the browser where you are connected to X, Instagram, or TikTok.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+
+                Spacer()
+
+                Picker("Browser", selection: $preferences.cookiesBrowser) {
+                    Text("Chrome").tag("chrome")
+                    Text("Brave").tag("brave")
+                    Text("Firefox").tag("firefox")
+                    Text("Safari").tag("safari")
+                    Text("Edge").tag("edge")
+                }
+                .labelsHidden()
+                .frame(width: 115)
+            }
+
+            Text("Optional: select a cookies.txt file only if browser extraction is unavailable.")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+
+            HStack {
+                Button("Choose cookies.txt…") { preferences.selectCookiesFile() }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                if !preferences.cookiesPath.isEmpty {
+                    Button("Clear imported file") { preferences.cookiesPath = "" }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                }
+                Spacer()
+            }
+        }
+        .padding(14)
+        .background(cardBackground)
+    }
+
+    // MARK: - Accessibility Section
+
+    private var accessibilitySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Accessibility")
+                .font(.headline)
+
+            HStack(spacing: 12) {
+                Image(systemName: accessibilityGranted ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(accessibilityGranted ? .green : .red)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(accessibilityGranted ? "Accessibility Granted" : "Accessibility Required")
+                        .font(.subheadline.weight(.medium))
+                    Text("Global keyboard shortcuts need accessibility access.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                if !accessibilityGranted {
+                    Button("Grant Access") {
+                        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
+                        AXIsProcessTrustedWithOptions(options)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                }
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(accessibilityGranted ? Color.green.opacity(0.08) : Color.red.opacity(0.08))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(accessibilityGranted ? Color.green.opacity(0.3) : Color.red.opacity(0.3), lineWidth: 1)
+            )
+        }
+    }
+
+    // MARK: - Shortcuts Section
+
+    private var shortcutsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Keyboard Shortcuts")
+                .font(.headline)
+
+            VStack(spacing: 0) {
+                shortcutRow("Activate app", action: .activateApp)
+                Divider().overlay(Color.white.opacity(0.08))
+                shortcutRow("Copy file", action: .copy)
+                Divider().overlay(Color.white.opacity(0.08))
+                shortcutRow("Open trim mode", action: .openTrim)
+            }
+        }
+        .padding(14)
+        .background(cardBackground)
+    }
+
+    private func shortcutRow(_ title: String, action: HotKeyAction) -> some View {
+        HStack {
+            Text(title)
+                .font(.subheadline)
+            Spacer()
+            ShortcutRecorderControl(shortcut: preferences.hotKeyShortcut(for: action)) { shortcut in
+                preferences.setHotKeyShortcut(shortcut, for: action)
+            }
+            .frame(width: 126, height: 26)
+        }
+        .padding(.vertical, 6)
+    }
+
+    // MARK: - Links Section
+
+    private var linksSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Links")
+                .font(.headline)
+
+            HStack(spacing: 12) {
+                Link(destination: URL(string: "https://github.com/pixel-point/media-downloader")!) {
+                    Label("Original Project (GitHub)", systemImage: "arrow.up.right.square")
+                        .font(.subheadline)
+                }
+
+                Spacer()
+
+                Link(destination: URL(string: "https://github.com")!) {
+                    Label("PKMediaDownloader Fork", systemImage: "arrow.up.right.square")
+                        .font(.subheadline)
+                }
+            }
+        }
+        .padding(14)
+        .background(cardBackground)
+    }
+
+    // MARK: - Helpers
+
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .fill(Color.white.opacity(0.06))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            )
     }
 }
 
-private final class SettingsButton: NSButton {
-    init(title: String) {
-        super.init(frame: .zero)
-        isBordered = false
-        wantsLayer = true
-        layer?.cornerRadius = 7
-        layer?.masksToBounds = true
-        layer?.backgroundColor = SettingsColors.shortcutFill.cgColor
-        layer?.borderColor = SettingsColors.shortcutBorder.cgColor
-        layer?.borderWidth = 1
-        focusRingType = .none
-        setButtonType(.momentaryPushIn)
-        attributedTitle = NSAttributedString(
-            string: title,
-            attributes: [
-                .font: NSFont.systemFont(ofSize: 13, weight: .regular),
-                .foregroundColor: NSColor.labelColor.withAlphaComponent(0.9)
-            ]
-        )
+// MARK: - Observable Wrapper
+
+@MainActor
+final class PreferencesStoreWrapper: ObservableObject {
+    @Published var cookiesPath: String
+    @Published var autoCopy: Bool
+    @Published var cookiesBrowser: String
+    @Published var downloadFolder: URL
+
+    private let store: PreferencesStore
+
+    init(_ store: PreferencesStore) {
+        self.store = store
+        self.cookiesPath = store.cookiesPath
+        self.autoCopy = store.autoCopyAfterDownload
+        self.cookiesBrowser = store.cookiesBrowser
+        self.downloadFolder = store.downloadFolder
     }
 
-    required init?(coder: NSCoder) {
-        nil
+    func chooseDownloadFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.directoryURL = store.downloadFolder
+        panel.prompt = "Choose"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        store.downloadFolder = url
+        downloadFolder = url
+    }
+
+    func selectCookiesFile() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.plainText, .data, .json]
+        panel.prompt = "Select Cookies File"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        store.cookiesPath = url.path
+        cookiesPath = url.path
+    }
+
+    func hotKeyShortcut(for action: HotKeyAction) -> HotKeyShortcut {
+        store.hotKeyShortcut(for: action)
+    }
+
+    func saveAutoCopy() {
+        store.autoCopyAfterDownload = autoCopy
+    }
+
+    func saveCookiesPath() {
+        store.cookiesPath = cookiesPath
+    }
+
+    func saveCookiesBrowser() {
+        store.cookiesBrowser = cookiesBrowser
+    }
+
+    func setHotKeyShortcut(_ shortcut: HotKeyShortcut, for action: HotKeyAction) {
+        store.setHotKeyShortcut(shortcut, for: action)
+        objectWillChange.send()
     }
 }
 
-private final class HotKeyRecorderButton: NSButton {
+private struct ShortcutRecorderControl: NSViewRepresentable {
+    let shortcut: HotKeyShortcut
+    let onRecord: (HotKeyShortcut) -> Void
+
+    func makeNSView(context: Context) -> ShortcutRecorderButton {
+        ShortcutRecorderButton(shortcut: shortcut, onRecord: onRecord)
+    }
+
+    func updateNSView(_ nsView: ShortcutRecorderButton, context: Context) {
+        nsView.update(shortcut: shortcut, onRecord: onRecord)
+    }
+}
+
+private final class ShortcutRecorderButton: NSButton {
     private var shortcut: HotKeyShortcut
-    private let onRecord: (HotKeyShortcut) -> Void
-    private var isRecordingShortcut = false
-    private var keyMonitor: Any?
-    private let shortcutLabel = NSTextField(labelWithString: "")
-    private let closeImageView = NSImageView()
+    private var onRecord: (HotKeyShortcut) -> Void
+    private var isRecording = false
 
     init(shortcut: HotKeyShortcut, onRecord: @escaping (HotKeyShortcut) -> Void) {
         self.shortcut = shortcut
         self.onRecord = onRecord
         super.init(frame: .zero)
-        title = ""
-        attributedTitle = NSAttributedString(string: "")
         isBordered = false
         wantsLayer = true
-        layer?.cornerRadius = 7
-        layer?.masksToBounds = true
+        layer?.cornerRadius = 6
         focusRingType = .none
-        setButtonType(.momentaryPushIn)
         target = self
-        action = #selector(startRecording)
-        setupContent()
-        updateAppearance()
+        action = #selector(beginRecording)
+        refreshTitle()
     }
 
-    required init?(coder: NSCoder) {
-        nil
+    required init?(coder: NSCoder) { nil }
+
+    override var acceptsFirstResponder: Bool { true }
+
+    func update(shortcut: HotKeyShortcut, onRecord: @escaping (HotKeyShortcut) -> Void) {
+        guard !isRecording else { return }
+        self.shortcut = shortcut
+        self.onRecord = onRecord
+        refreshTitle()
     }
 
-    deinit {
-        removeKeyMonitor()
-    }
-
-    override var acceptsFirstResponder: Bool {
-        true
-    }
-
-    private func setupContent() {
-        shortcutLabel.alignment = .center
-        shortcutLabel.translatesAutoresizingMaskIntoConstraints = false
-        shortcutLabel.isEditable = false
-        shortcutLabel.isSelectable = false
-        shortcutLabel.backgroundColor = .clear
-
-        let symbolConfiguration = NSImage.SymbolConfiguration(pointSize: 12.5, weight: .regular)
-        closeImageView.image = NSImage(systemSymbolName: "xmark", accessibilityDescription: nil)?
-            .withSymbolConfiguration(symbolConfiguration)
-        closeImageView.contentTintColor = NSColor.labelColor.withAlphaComponent(0.82)
-        closeImageView.imageScaling = .scaleProportionallyDown
-        closeImageView.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(shortcutLabel)
-        addSubview(closeImageView)
-
-        NSLayoutConstraint.activate([
-            shortcutLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            shortcutLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            shortcutLabel.widthAnchor.constraint(equalToConstant: 74),
-
-            closeImageView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -6),
-            closeImageView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            closeImageView.widthAnchor.constraint(equalToConstant: 12),
-            closeImageView.heightAnchor.constraint(equalToConstant: 12)
-        ])
-    }
-
-    @objc private func startRecording() {
-        isRecordingShortcut = true
-        updateAppearance()
+    @objc private func beginRecording() {
+        isRecording = true
         window?.makeFirstResponder(self)
-        installKeyMonitor()
+        refreshTitle()
     }
 
     override func keyDown(with event: NSEvent) {
-        guard isRecordingShortcut else {
+        guard isRecording else {
             super.keyDown(with: event)
             return
         }
 
-        capture(event)
-    }
-
-    private func capture(_ event: NSEvent) {
         if event.keyCode == 53 {
-            stopRecording()
+            isRecording = false
+            refreshTitle()
             return
         }
 
-        guard !Self.modifierOnlyKeyCodes.contains(event.keyCode) else {
-            return
-        }
-
+        guard ![54, 55, 56, 57, 58, 59, 60, 61, 62].contains(event.keyCode) else { return }
         shortcut = HotKeyShortcut(keyCode: event.keyCode, modifiers: event.modifierFlags)
-        stopRecording()
+        isRecording = false
         onRecord(shortcut)
+        refreshTitle()
     }
 
-    private func updateAppearance() {
-        let text = isRecordingShortcut ? "Record shortcut" : shortcut.displayText
-        let font = NSFont.systemFont(ofSize: isRecordingShortcut ? 12 : 13, weight: .regular)
-        let color = isRecordingShortcut
-            ? NSColor.controlAccentColor
-            : NSColor.labelColor.withAlphaComponent(0.88)
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .center
-
-        shortcutLabel.attributedStringValue = NSAttributedString(
+    private func refreshTitle() {
+        let text = isRecording ? "Press shortcut" : shortcut.displayText
+        attributedTitle = NSAttributedString(
             string: text,
             attributes: [
-                .font: font,
-                .foregroundColor: color,
-                .paragraphStyle: paragraph
+                .font: NSFont.monospacedSystemFont(ofSize: 12, weight: .medium),
+                .foregroundColor: isRecording ? NSColor.controlAccentColor : NSColor.secondaryLabelColor
             ]
         )
-        closeImageView.isHidden = isRecordingShortcut
-        layer?.backgroundColor = (isRecordingShortcut
-            ? NSColor.controlAccentColor.withAlphaComponent(0.14)
-            : SettingsColors.shortcutFill
-        ).cgColor
-        layer?.borderColor = (isRecordingShortcut
-            ? NSColor.controlAccentColor.withAlphaComponent(0.48)
-            : SettingsColors.shortcutBorder
-        ).cgColor
-        layer?.borderWidth = 1
-    }
-
-    private func stopRecording() {
-        isRecordingShortcut = false
-        removeKeyMonitor()
-        updateAppearance()
-    }
-
-    private func installKeyMonitor() {
-        removeKeyMonitor()
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self, isRecordingShortcut else {
-                return event
-            }
-
-            capture(event)
-            return nil
-        }
-    }
-
-    private func removeKeyMonitor() {
-        if let keyMonitor {
-            NSEvent.removeMonitor(keyMonitor)
-            self.keyMonitor = nil
-        }
-    }
-
-    private static let modifierOnlyKeyCodes: Set<UInt16> = [
-        54, 55, 56, 57, 58, 59, 60, 61, 62
-    ]
-}
-
-private extension NSView {
-    func setupCardLayer() {
-        wantsLayer = true
-        layer?.cornerRadius = 10
-        layer?.masksToBounds = true
-        layer?.backgroundColor = SettingsColors.cardBackground.cgColor
-        layer?.borderColor = SettingsColors.cardBorder.cgColor
-        layer?.borderWidth = 1
+        layer?.backgroundColor = (isRecording ? NSColor.controlAccentColor.withAlphaComponent(0.14) : NSColor.white.withAlphaComponent(0.08)).cgColor
     }
 }

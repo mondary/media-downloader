@@ -3,12 +3,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "MediaDownloader",
+    name: "PKMediaDownloader",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "MediaDownloader", targets: ["MediaDownloader"])
+        .executable(name: "PKMediaDownloader", targets: ["MediaDownloader"])
     ],
     targets: [
         .executableTarget(name: "MediaDownloader"),

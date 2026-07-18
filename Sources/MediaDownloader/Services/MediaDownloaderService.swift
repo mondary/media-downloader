@@ -20,26 +20,51 @@ enum MediaDownloaderError: LocalizedError {
 actor MediaDownloaderService {
     private let fileManager = FileManager.default
 
-    func download(sourceURL: String, destinationFolder: URL) async throws -> DownloadResult {
+    func download(
+        sourceURL: String,
+        destinationFolder: URL,
+        cookiesPath: String? = nil,
+        cookiesBrowser: String = "chrome"
+    ) async throws -> DownloadResult {
         try await requireTool("yt-dlp")
         try await requireTool("ffmpeg")
         try fileManager.createDirectory(at: destinationFolder, withIntermediateDirectories: true)
 
         let startDate = Date()
-        let arguments = [
+        var arguments = [
             "yt-dlp",
-            "--no-playlist",
             "--no-progress",
             "--restrict-filenames",
             "--merge-output-format", "mp4",
-            "--recode-video", "mp4",
+            "--remux-video", "mp4",
             "-S", "vcodec:h264,acodec:aac,ext:mp4:m4a",
             "--paths", destinationFolder.path,
             "--output", "%(title).180B [%(id)s].%(ext)s",
             "--print", "after_move:%(filepath)s",
             "--print", "after_move:%(title)s",
-            sourceURL
         ]
+
+        let lowercased = sourceURL.lowercased()
+        let requiresSocialCookies = lowercased.contains("instagram.com")
+            || lowercased.contains("x.com")
+            || lowercased.contains("twitter.com")
+            || lowercased.contains("tiktok.com")
+
+        if let cookies = cookiesPath, !cookies.isEmpty, fileManager.fileExists(atPath: cookies) {
+            arguments += ["--cookies", cookies]
+        } else if requiresSocialCookies {
+            arguments += ["--cookies-from-browser", cookiesBrowser]
+        }
+
+        let isYouTubePlaylist = lowercased.contains("youtube.com/playlist?list=")
+            || (lowercased.contains("youtube.com/watch") && lowercased.contains("list="))
+            || (lowercased.contains("youtu.be/") && lowercased.contains("list="))
+
+        if !isYouTubePlaylist {
+            arguments += ["--no-playlist"]
+        }
+
+        arguments.append(sourceURL)
 
         let output = try await runProcess(executable: "/usr/bin/env", arguments: arguments)
         let lines = output

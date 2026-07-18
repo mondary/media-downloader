@@ -2,10 +2,10 @@
 set -euo pipefail
 
 MODE="${1:-run}"
-APP_NAME="MediaDownloader"
-BUNDLE_ID="com.local.MediaDownloader"
+APP_NAME="PKMediaDownloader"
+BUNDLE_ID="com.pkmediadownloader.app"
 MIN_SYSTEM_VERSION="14.0"
-APP_VERSION="${APP_VERSION:-0.2.0}"
+APP_VERSION="${APP_VERSION:-v1.2026.1}"
 APP_BUILD="${APP_BUILD:-1}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
