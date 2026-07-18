@@ -15,3 +15,4 @@ DerivedData/
 *.mobileprovision
 *.provisionprofile
 *.key
+.codex/

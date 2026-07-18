@@ -24,12 +24,6 @@ struct DownloadInputView: View {
             )
             .frame(height: 36)
 
-            if isDownloading {
-                CircularDownloadIndicator()
-                    .frame(width: 24, height: 24)
-                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
-            }
-
             InputSettingsButton(
                 folderName: folderName,
                 onChooseFolder: onChooseFolder,
@@ -110,30 +104,5 @@ private final class InputMenuActionTarget: NSObject {
 
     @objc func performAction() {
         action()
-    }
-}
-
-private struct CircularDownloadIndicator: View {
-    @State private var rotation: Double = 0
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Color.primary.opacity(0.12), lineWidth: 2.4)
-
-            Circle()
-                .trim(from: 0.08, to: 0.74)
-                .stroke(
-                    Color.primary.opacity(0.72),
-                    style: StrokeStyle(lineWidth: 2.4, lineCap: .round)
-                )
-                .rotationEffect(.degrees(rotation))
-        }
-        .padding(3)
-        .onAppear {
-            withAnimation(.linear(duration: 0.9).repeatForever(autoreverses: false)) {
-                rotation = 360
-            }
-        }
     }
 }

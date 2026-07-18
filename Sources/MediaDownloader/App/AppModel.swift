@@ -6,6 +6,7 @@ final class AppModel: ObservableObject {
     @Published var inputText = ""
     @Published private(set) var history: [DownloadItem] = []
     @Published private(set) var isDownloading = false
+    @Published private(set) var activeDownload: DownloadProgress?
     @Published var statusMessage: String?
     @Published var activeTrimSession: ActiveTrimSession?
     @Published private(set) var isCheckingForUpdates = false
@@ -213,8 +214,17 @@ final class AppModel: ObservableObject {
         }
 
         isDownloading = true
+        activeDownload = DownloadProgress(
+            sourceURL: sourceURL,
+            title: sourceURL,
+            thumbnailURL: nil,
+            playlistIndex: nil,
+            playlistCount: nil,
+            fractionCompleted: nil
+        )
         statusMessage = "Downloading..."
         NotificationCenter.default.post(name: .downloadStarted, object: nil)
+        let model = self
 
         do {
             let cookies = preferences.cookiesPath.isEmpty ? nil : preferences.cookiesPath
@@ -222,7 +232,10 @@ final class AppModel: ObservableObject {
                 sourceURL: sourceURL,
                 destinationFolder: preferences.downloadFolder,
                 cookiesPath: cookies,
-                cookiesBrowser: preferences.cookiesBrowser
+                cookiesBrowser: preferences.cookiesBrowser,
+                onProgress: { progress in
+                    await model.updateActiveDownload(progress)
+                }
             )
             let item = DownloadItem(
                 sourceURL: sourceURL,
@@ -246,6 +259,13 @@ final class AppModel: ObservableObject {
         }
 
         isDownloading = false
+        activeDownload = nil
+    }
+
+    private func updateActiveDownload(_ progress: DownloadProgress) {
+        guard isDownloading else { return }
+        activeDownload = progress
+        NotificationCenter.default.post(name: .downloadProgressed, object: progress)
     }
 
     private func generateThumbnailInBackground(for item: DownloadItem) {

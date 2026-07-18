@@ -38,6 +38,11 @@ struct ContentView: View {
                 .opacity(inputAppeared ? 1 : 0)
                 .blur(radius: inputAppeared ? 0 : 7)
 
+                if let progress = model.activeDownload {
+                    ActiveDownloadView(progress: progress)
+                        .transition(.opacity.combined(with: .scale(scale: 0.985, anchor: .top)))
+                }
+
                 if let session = displayedTrimSession {
                     VideoTrimPanelView(
                         session: session,

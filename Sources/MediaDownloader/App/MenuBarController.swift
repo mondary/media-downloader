@@ -4,7 +4,6 @@ import UserNotifications
 final class MenuBarController {
     private var statusItem: NSStatusItem?
     private var statusMenu: NSMenu?
-    private var spinner: NSProgressIndicator?
 
     func setup() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -34,6 +33,9 @@ final class MenuBarController {
             if let title = notification.userInfo?["title"] as? String {
                 self?.sendNotification(title: "Download Complete", body: title)
             }
+        }
+        NotificationCenter.default.addObserver(forName: .downloadProgressed, object: nil, queue: .main) { [weak self] notification in
+            self?.setDownloadProgress(notification.object as? DownloadProgress)
         }
         NotificationCenter.default.addObserver(forName: .downloadFailed, object: nil, queue: .main) { [weak self] notification in
             self?.setDownloading(false)
@@ -67,26 +69,23 @@ final class MenuBarController {
             button.image = image
             button.contentTintColor = .systemBlue
 
-            if spinner == nil {
-                let s = NSProgressIndicator()
-                s.style = .spinning
-                s.controlSize = .small
-                s.frame = NSRect(x: 0, y: 0, width: 14, height: 14)
-                s.startAnimation(nil)
-                button.addSubview(s)
-                spinner = s
-            }
         } else {
-            spinner?.stopAnimation(nil)
-            spinner?.removeFromSuperview()
-            spinner = nil
-
             let image = NSImage(systemSymbolName: "arrow.down.circle", accessibilityDescription: "PKMediaDownloader")
             image?.isTemplate = true
             image?.size = NSSize(width: 18, height: 18)
             button.image = image
             button.contentTintColor = nil
+            button.title = ""
         }
+    }
+
+    private func setDownloadProgress(_ progress: DownloadProgress?) {
+        guard let button = statusItem?.button, let progress else { return }
+
+        let playlistPosition = progress.playlistPosition.map { "\($0) · " } ?? ""
+        button.title = " \(playlistPosition)\(progress.progressLabel)"
+        button.toolTip = "\(progress.title) · \(progress.progressLabel)"
+        button.setAccessibilityLabel("Downloading \(progress.title), \(playlistPosition)\(progress.progressLabel)")
     }
 
     func showSuccess() {
@@ -161,6 +160,7 @@ final class MenuBarController {
 extension Notification.Name {
     static let showMainWindow = Notification.Name("PKMediaDownloaderShowMainWindow")
     static let downloadStarted = Notification.Name("PKMediaDownloaderDownloadStarted")
+    static let downloadProgressed = Notification.Name("PKMediaDownloaderDownloadProgressed")
     static let downloadCompleted = Notification.Name("PKMediaDownloaderDownloadCompleted")
     static let downloadFailed = Notification.Name("PKMediaDownloaderDownloadFailed")
 }
