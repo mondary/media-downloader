@@ -2,7 +2,7 @@
 
 [🇫🇷 FR](README.md) · [🇬🇧 EN](README_en.md)
 
-📦 version **v1.2026.6** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 version **v1.2026.7** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Téléchargeur vidéo natif macOS basé sur yt-dlp — supporte YouTube (playlists), Instagram, X/Twitter, TikTok et des milliers d'autres sites.
 
@@ -74,6 +74,7 @@ swift run
 
 ## 🧾 Changelog
 
+- **v1.2026.7** : « Check for Updates » vérifie le dépôt fork au lieu de l'amont
 - **v1.2026.6** : Mise à jour de yt-dlp depuis les réglages (version affichée + bouton)
 - **v1.2026.5** : `.gitignore` ignore le fichier `Icon?` parasite macOS
 - **v1.2026.4** : Dossier `store/` avec kit promotionnel (bannière, card, capture, démo)

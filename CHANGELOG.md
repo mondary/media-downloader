@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.7] - 2026-09-29
+
+### Fixed
+- « Check for Updates » vérifie les releases du dépôt fork (mondary/media-downloader) au lieu du projet amont
+
 ## [v1.2026.6] - 2026-09-29
 
 ### Added

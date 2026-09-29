@@ -35,7 +35,7 @@ struct UpdateChecker {
     private let session: URLSession
 
     init(
-        repository: String = "pixel-point/media-downloader",
+        repository: String = "mondary/media-downloader",
         session: URLSession = .shared
     ) {
         latestReleaseURL = URL(string: "https://api.github.com/repos/\(repository)/releases/latest")!
