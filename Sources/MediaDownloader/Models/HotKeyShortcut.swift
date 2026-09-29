@@ -23,7 +23,7 @@ enum HotKeyAction: String, CaseIterable {
         case .openTrim:
             return HotKeyShortcut(keyCode: 36, modifiers: [.command])
         case .activateApp:
-            return HotKeyShortcut(keyCode: 28, modifiers: [.command, .shift])
+            return HotKeyShortcut(keyCode: 22, modifiers: [.command, .shift])
         }
     }
 }

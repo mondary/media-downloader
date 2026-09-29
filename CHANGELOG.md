@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.9] - 2026-09-29
+
+### Fixed
+- Raccourci global par défaut réellement Cmd+Shift+6 (keycode 22) au lieu de Cmd+Shift+8 — mis en évidence par le premier build CI
+
 ## [v1.2026.8] - 2026-09-29
 
 ### Added
