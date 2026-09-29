@@ -18,6 +18,7 @@ final class AppModel: ObservableObject {
     private let trimExporter = TrimExportService()
     private let updateChecker = UpdateChecker()
     private var pasteTask: Task<Void, Never>?
+    private var completedDownloadPaths = Set<String>()
     private var didRunAutomaticUpdateCheck = false
     private var settingsWindowController: SettingsWindowController?
 
@@ -123,7 +124,7 @@ final class AppModel: ObservableObject {
             guard let self else { return }
 
             do {
-                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.1"
+                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.3"
                 let result = try await updateChecker.check(currentVersion: currentVersion)
                 let downloadedUpdate: DownloadedUpdate?
 
@@ -223,6 +224,7 @@ final class AppModel: ObservableObject {
             fractionCompleted: nil
         )
         statusMessage = "Downloading..."
+        completedDownloadPaths.removeAll()
         NotificationCenter.default.post(name: .downloadStarted, object: nil)
         let model = self
 
@@ -235,9 +237,19 @@ final class AppModel: ObservableObject {
                 cookiesBrowser: preferences.cookiesBrowser,
                 onProgress: { progress in
                     await model.updateActiveDownload(progress)
+                },
+                onItemCompleted: { completedDownload in
+                    await model.recordCompletedDownload(completedDownload)
                 }
             )
-            let item = DownloadItem(
+            let completedDownload = CompletedDownload(
+                fileURL: result.fileURL,
+                title: result.title,
+                sourceURL: sourceURL
+            )
+            let item = recordCompletedDownload(completedDownload)
+                ?? history.first(where: { $0.filePath == result.fileURL.path })
+                ?? DownloadItem(
                 sourceURL: sourceURL,
                 title: result.title,
                 filePath: result.fileURL.path,
@@ -245,8 +257,6 @@ final class AppModel: ObservableObject {
                 createdAt: Date()
             )
 
-            history.insert(item, at: 0)
-            historyStore.save(history)
             ClipboardService.copyFile(result.fileURL)
             activeTrimSession = ActiveTrimSession(item: item)
             inputText = ""
@@ -266,6 +276,25 @@ final class AppModel: ObservableObject {
         guard isDownloading else { return }
         activeDownload = progress
         NotificationCenter.default.post(name: .downloadProgressed, object: progress)
+    }
+
+    @discardableResult
+    private func recordCompletedDownload(_ completedDownload: CompletedDownload) -> DownloadItem? {
+        guard completedDownloadPaths.insert(completedDownload.fileURL.path).inserted else {
+            return nil
+        }
+
+        let item = DownloadItem(
+            sourceURL: completedDownload.sourceURL,
+            title: completedDownload.title,
+            filePath: completedDownload.fileURL.path,
+            thumbnailPath: nil,
+            createdAt: Date()
+        )
+        history.insert(item, at: 0)
+        historyStore.save(history)
+        generateThumbnailInBackground(for: item)
+        return item
     }
 
     private func generateThumbnailInBackground(for item: DownloadItem) {

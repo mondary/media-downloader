@@ -28,4 +28,14 @@ final class DownloadProgressParserTests: XCTestCase {
         XCTAssertEqual(updates.first?.playlistPosition, "Video 1 of 28")
         XCTAssertNil(updates.first?.fractionCompleted)
     }
+
+    func testParsesCompletedPlaylistItem() async {
+        let parser = DownloadProgressParser(sourceURL: "https://youtube.com/playlist?list=example")
+        let separator = "\u{1F}"
+        let completedDownloads = await parser.consumeCompletedDownloads("completed:/Downloads/First.mp4\(separator)First video\(separator)https://youtube.com/watch?v=first\n")
+
+        XCTAssertEqual(completedDownloads.count, 1)
+        XCTAssertEqual(completedDownloads.first?.fileURL.path, "/Downloads/First.mp4")
+        XCTAssertEqual(completedDownloads.first?.title, "First video")
+    }
 }

@@ -2,7 +2,7 @@
 
 [🇫🇷 FR](README.md) · [🇬🇧 EN](README_en.md)
 
-📦 version **v1.2026.2** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 version **v1.2026.3** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Téléchargeur vidéo natif macOS basé sur yt-dlp — supporte YouTube (playlists), Instagram, X/Twitter, TikTok et des milliers d'autres sites.
 
@@ -74,6 +74,7 @@ swift run
 
 ## 🧾 Changelog
 
+- **v1.2026.3** : Historique playlist item par item, panneau historique redimensionnable avec bouton « Vider »
 - **v1.2026.2** : Correction du lien GitHub dans les réglages (pointe vers le fork)
 - **v1.2026.1** : Fork de [pixel-point/media-downloader](https://github.com/pixel-point/media-downloader) avec :
   - Support playlists YouTube

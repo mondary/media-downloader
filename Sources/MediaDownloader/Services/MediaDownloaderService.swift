@@ -25,7 +25,8 @@ actor MediaDownloaderService {
         destinationFolder: URL,
         cookiesPath: String? = nil,
         cookiesBrowser: String = "chrome",
-        onProgress: @escaping @Sendable (DownloadProgress) async -> Void = { _ in }
+        onProgress: @escaping @Sendable (DownloadProgress) async -> Void = { _ in },
+        onItemCompleted: @escaping @Sendable (CompletedDownload) async -> Void = { _ in }
     ) async throws -> DownloadResult {
         try await requireTool("yt-dlp")
         try await requireTool("ffmpeg")
@@ -43,8 +44,7 @@ actor MediaDownloaderService {
             "--paths", destinationFolder.path,
             "--output", "%(title).180B [%(id)s].%(ext)s",
             "--print", "before_dl:metadata:%(playlist_index)s\u{1F}%(playlist_count)s\u{1F}%(title)s\u{1F}%(webpage_url)s\u{1F}%(thumbnail)s",
-            "--print", "after_move:%(filepath)s",
-            "--print", "after_move:%(title)s",
+            "--print", "after_move:completed:%(filepath)s\u{1F}%(title)s\u{1F}%(webpage_url)s",
         ]
 
         let lowercased = sourceURL.lowercased()
@@ -79,6 +79,11 @@ actor MediaDownloaderService {
                     for update in updates {
                         await onProgress(update)
                     }
+
+                    let completedDownloads = await progressParser.consumeCompletedDownloads(output)
+                    for completedDownload in completedDownloads {
+                        await onItemCompleted(completedDownload)
+                    }
                 }
             },
             onStandardError: { output in
@@ -90,14 +95,36 @@ actor MediaDownloaderService {
                 }
             }
         )
+
+        // A fast download can finish before a readability handler is scheduled.
+        // Replay its captured output so its final progress and history event are not lost.
+        let finalUpdates = await progressParser.consumeStandardOutput(output + "\n")
+        for update in finalUpdates {
+            await onProgress(update)
+        }
+        let finalCompletedDownloads = await progressParser.consumeCompletedDownloads(output + "\n")
+        for completedDownload in finalCompletedDownloads {
+            await onItemCompleted(completedDownload)
+        }
+
         let lines = output
             .split(whereSeparator: \.isNewline)
             .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
 
+        let lastCompletedDownload = finalCompletedDownloads.last
         let filePath = lines.first(where: { $0.hasPrefix("/") && fileManager.fileExists(atPath: $0) })
-        let fileURL = try filePath.map(URL.init(fileURLWithPath:)) ?? newestMediaFile(in: destinationFolder, after: startDate)
-        let title = lines.last(where: { !$0.hasPrefix("/") }) ?? fileURL.deletingPathExtension().lastPathComponent
+        let fileURL: URL
+        if let lastCompletedDownload {
+            fileURL = lastCompletedDownload.fileURL
+        } else if let filePath {
+            fileURL = URL(fileURLWithPath: filePath)
+        } else {
+            fileURL = try newestMediaFile(in: destinationFolder, after: startDate)
+        }
+        let title = lastCompletedDownload?.title
+            ?? lines.last(where: { !$0.hasPrefix("/") })
+            ?? fileURL.deletingPathExtension().lastPathComponent
         return DownloadResult(fileURL: fileURL, title: title)
     }
 
@@ -181,6 +208,8 @@ actor MediaDownloaderService {
                 let error = String(data: errorData, encoding: .utf8) ?? ""
                 standardOutput.append(output)
                 standardError.append(error)
+                onStandardOutput(output)
+                onStandardError(error)
 
                 if process.terminationStatus == 0 {
                     continuation.resume(returning: standardOutput.value)

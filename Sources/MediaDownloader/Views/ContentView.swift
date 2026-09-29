@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var trimPlaybackCommand = 0
     @State private var copiedHistoryItemID: DownloadItem.ID?
     @State private var suppressHistoryHover = false
+    @State private var historyHeight: CGFloat?
 
     var body: some View {
         ZStack {
@@ -66,6 +67,8 @@ struct ContentView: View {
                         onOpenSource: model.openSourceURL,
                         onDelete: model.deleteHistoryItem,
                         onEdit: model.editTrim,
+                        onClear: model.clearHistory,
+                        height: $historyHeight,
                         selectedIndex: keyboardScrollIndex,
                         selectedItemID: selectedHistoryItem?.id,
                         copiedItemID: copiedHistoryItemID,

@@ -4,6 +4,7 @@ actor DownloadProgressParser {
     private let sourceURL: String
     private var pendingStandardOutput = ""
     private var pendingStandardError = ""
+    private var pendingCompletedDownloads = ""
 
     init(sourceURL: String) {
         self.sourceURL = sourceURL
@@ -15,6 +16,14 @@ actor DownloadProgressParser {
 
     func consumeStandardError(_ output: String) -> [DownloadProgress] {
         consume(output, pendingOutput: &pendingStandardError)
+    }
+
+    func consumeCompletedDownloads(_ output: String) -> [CompletedDownload] {
+        pendingCompletedDownloads += output
+        let lines = pendingCompletedDownloads.components(separatedBy: .newlines)
+        pendingCompletedDownloads = lines.last ?? ""
+
+        return lines.dropLast().compactMap(parseCompletedDownload)
     }
 
     private func consume(_ output: String, pendingOutput: inout String) -> [DownloadProgress] {
@@ -67,6 +76,23 @@ actor DownloadProgressParser {
             playlistIndex: Int(fields[1]),
             playlistCount: Int(fields[2]),
             fractionCompleted: percentage.map { min(max($0 / 100, 0), 1) }
+        )
+    }
+
+    private func parseCompletedDownload(_ line: String) -> CompletedDownload? {
+        guard let range = line.range(of: "completed:") else {
+            return nil
+        }
+
+        let fields = line[range.upperBound...].split(separator: "\u{1F}", omittingEmptySubsequences: false).map(String.init)
+        guard fields.count >= 3 else {
+            return nil
+        }
+
+        return CompletedDownload(
+            fileURL: URL(fileURLWithPath: fields[0]),
+            title: fields[1],
+            sourceURL: fields[2].isEmpty ? sourceURL : fields[2]
         )
     }
 }
