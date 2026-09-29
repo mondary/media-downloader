@@ -107,7 +107,7 @@ private struct SettingsRootView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("PKMediaDownloader")
                         .font(.title3.weight(.semibold))
-                    Text("v1.2026.1 — Native macOS video downloader")
+                                        Text("v1.2026.2 — Native macOS video downloader")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -325,8 +325,8 @@ private struct SettingsRootView: View {
 
                 Spacer()
 
-                Link(destination: URL(string: "https://github.com")!) {
-                    Label("PKMediaDownloader Fork", systemImage: "arrow.up.right.square")
+                Link(destination: URL(string: "https://github.com/mondary/media-downloader")!) {
+                    Label("PKMediaDownloader (GitHub)", systemImage: "arrow.up.right.square")
                         .font(.subheadline)
                 }
             }

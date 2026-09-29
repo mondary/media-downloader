@@ -2,6 +2,8 @@
 
 [🇬🇧 EN](README_en.md) · [🇫🇷 FR](README.md)
 
+📦 version **v1.2026.2** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+
 ✨ Native macOS video downloader powered by yt-dlp — supports YouTube (playlists), Instagram, X/Twitter, TikTok and thousands more sites.
 
 ## ✅ Features
@@ -72,6 +74,7 @@ swift run
 
 ## 🧾 Changelog
 
+- **v1.2026.2**: Fixed GitHub link in settings (now points to the fork)
 - **v1.2026.1**: Fork of [pixel-point/media-downloader](https://github.com/pixel-point/media-downloader) with:
   - YouTube playlist support
   - Cookie auth for Instagram/X/TikTok
