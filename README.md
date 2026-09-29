@@ -2,7 +2,7 @@
 
 [🇫🇷 FR](README.md) · [🇬🇧 EN](README_en.md)
 
-📦 version **v1.2026.4** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 version **v1.2026.5** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Téléchargeur vidéo natif macOS basé sur yt-dlp — supporte YouTube (playlists), Instagram, X/Twitter, TikTok et des milliers d'autres sites.
 
@@ -74,6 +74,7 @@ swift run
 
 ## 🧾 Changelog
 
+- **v1.2026.5** : `.gitignore` ignore le fichier `Icon?` parasite macOS
 - **v1.2026.4** : Dossier `store/` avec kit promotionnel (bannière, card, capture, démo)
 - **v1.2026.3** : Historique playlist item par item, panneau historique redimensionnable avec bouton « Vider »
 - **v1.2026.2** : Correction du lien GitHub dans les réglages (pointe vers le fork)

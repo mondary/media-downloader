@@ -2,7 +2,7 @@
 
 [🇬🇧 EN](README_en.md) · [🇫🇷 FR](README.md)
 
-📦 version **v1.2026.4** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 version **v1.2026.5** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Native macOS video downloader powered by yt-dlp — supports YouTube (playlists), Instagram, X/Twitter, TikTok and thousands more sites.
 
@@ -74,6 +74,7 @@ swift run
 
 ## 🧾 Changelog
 
+- **v1.2026.5**: `.gitignore` ignores the macOS `Icon?` junk file
 - **v1.2026.4**: `store/` folder with promo kit (banner, card, screenshot, demo)
 - **v1.2026.3**: Per-item playlist history, resizable history panel with a Clear button
 - **v1.2026.2**: Fixed GitHub link in settings (now points to the fork)
