@@ -116,7 +116,7 @@ private struct SettingsRootView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("PKMediaDownloader")
                         .font(.title3.weight(.semibold))
-                                        Text("v1.2026.7 — Native macOS video downloader")
+                                        Text("v1.2026.8 — Native macOS video downloader")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

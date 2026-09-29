@@ -4,7 +4,7 @@ set -euo pipefail
 APP_NAME="PKMediaDownloader"
 BUNDLE_ID="${BUNDLE_ID:-com.pkmediadownloader.app}"
 MIN_SYSTEM_VERSION="14.0"
-APP_VERSION="${APP_VERSION:-v1.2026.7}"
+APP_VERSION="${APP_VERSION:-v1.2026.8}"
 APP_BUILD="${APP_BUILD:-1}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -50,7 +50,12 @@ require_command codesign
 require_command xcrun
 require_command hdiutil
 
-[[ -n "$DEVELOPER_ID" ]] || fail "MEDIA_DOWNLOADER_DEVELOPER_ID or ELECTROBUN_DEVELOPER_ID is required"
+SIGNED_MODE="true"
+if [[ "${CI_UNSIGNED:-0}" == "1" ]]; then
+  SIGNED_MODE="false"
+elif [[ -z "$DEVELOPER_ID" ]]; then
+  fail "MEDIA_DOWNLOADER_DEVELOPER_ID or ELECTROBUN_DEVELOPER_ID is required (or set CI_UNSIGNED=1 for an ad-hoc signed build)"
+fi
 
 ARCH="$(uname -m)"
 RELEASE_DIR="$ROOT_DIR/dist/release"
@@ -102,28 +107,34 @@ cat >"$INFO_PLIST" <<PLIST
 </plist>
 PLIST
 
-codesign --force --deep --options runtime --timestamp --sign "$DEVELOPER_ID" "$APP_BUNDLE"
-codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE"
+if [[ "$SIGNED_MODE" == "true" ]]; then
+  codesign --force --deep --options runtime --timestamp --sign "$DEVELOPER_ID" "$APP_BUNDLE"
+  codesign --verify --deep --strict --verbose=2 "$APP_BUNDLE"
 
-/usr/bin/ditto -c -k --keepParent "$APP_BUNDLE" "$NOTARY_ZIP"
-NOTARY_ARGS=()
-while IFS= read -r arg; do
-  NOTARY_ARGS+=("$arg")
-done < <(notarytool_args)
-xcrun notarytool submit "$NOTARY_ZIP" "${NOTARY_ARGS[@]}" --wait
-xcrun stapler staple "$APP_BUNDLE"
-xcrun stapler validate "$APP_BUNDLE"
-spctl -a -vvv --type exec "$APP_BUNDLE"
+  /usr/bin/ditto -c -k --keepParent "$APP_BUNDLE" "$NOTARY_ZIP"
+  NOTARY_ARGS=()
+  while IFS= read -r arg; do
+    NOTARY_ARGS+=("$arg")
+  done < <(notarytool_args)
+  xcrun notarytool submit "$NOTARY_ZIP" "${NOTARY_ARGS[@]}" --wait
+  xcrun stapler staple "$APP_BUNDLE"
+  xcrun stapler validate "$APP_BUNDLE"
+  spctl -a -vvv --type exec "$APP_BUNDLE"
+else
+  codesign --force --deep --options runtime --sign - "$APP_BUNDLE"
+fi
 
 rm -f "$RELEASE_ZIP"
 /usr/bin/ditto -c -k --keepParent "$APP_BUNDLE" "$RELEASE_ZIP"
 "$ROOT_DIR/script/create_dmg.sh" "$APP_BUNDLE" "$RELEASE_DMG" "$APP_NAME"
-codesign --force --timestamp --sign "$DEVELOPER_ID" "$RELEASE_DMG"
-codesign --verify --verbose=2 "$RELEASE_DMG"
-xcrun notarytool submit "$RELEASE_DMG" "${NOTARY_ARGS[@]}" --wait
-xcrun stapler staple "$RELEASE_DMG"
-xcrun stapler validate "$RELEASE_DMG"
-spctl -a -vvv -t open --context context:primary-signature "$RELEASE_DMG"
+if [[ "$SIGNED_MODE" == "true" ]]; then
+  codesign --force --timestamp --sign "$DEVELOPER_ID" "$RELEASE_DMG"
+  codesign --verify --verbose=2 "$RELEASE_DMG"
+  xcrun notarytool submit "$RELEASE_DMG" "${NOTARY_ARGS[@]}" --wait
+  xcrun stapler staple "$RELEASE_DMG"
+  xcrun stapler validate "$RELEASE_DMG"
+  spctl -a -vvv -t open --context context:primary-signature "$RELEASE_DMG"
+fi
 rm -f "$NOTARY_ZIP"
 
 printf '%s\n' "$RELEASE_ZIP"

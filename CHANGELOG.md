@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.8] - 2026-09-29
+
+### Added
+- Workflow GitHub Actions « build » : tests + build + DMG/ZIP ad-hoc signés en artefact (mode `CI_UNSIGNED=1` dans `package_macos.sh`, signature Developer ID inchangée quand les secrets sont présents)
+
 ## [v1.2026.7] - 2026-09-29
 
 ### Fixed

@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Sources/**"
+      - "Tests/**"
+      - "Package.swift"
+      - "script/**"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Test, build and package (ad-hoc signed)
+        env:
+          CI_UNSIGNED: "1"
+          SKIP_DMG_FINDER_LAYOUT: "true"
+        run: ./script/package_macos.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PKMediaDownloader-macos
+          path: dist/release/*
+          if-no-files-found: error
