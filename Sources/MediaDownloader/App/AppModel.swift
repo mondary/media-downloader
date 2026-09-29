@@ -124,7 +124,7 @@ final class AppModel: ObservableObject {
             guard let self else { return }
 
             do {
-                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.3"
+                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.4"
                 let result = try await updateChecker.check(currentVersion: currentVersion)
                 let downloadedUpdate: DownloadedUpdate?
 
