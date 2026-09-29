@@ -16,6 +16,61 @@ enum DependencyChecker {
         return DependencyStatus(missingTools: missing)
     }
 
+    static func version(ofTool tool: String) -> String? {
+        guard let path = executablePath(named: tool) else { return nil }
+        let process = Process()
+        let pipe = Pipe()
+        process.executableURL = URL(fileURLWithPath: path)
+        process.arguments = ["--version"]
+        process.standardOutput = pipe
+        process.standardError = Pipe()
+        process.environment = processEnvironment
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return nil
+        }
+        guard process.terminationStatus == 0 else { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        return String(data: data, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: .newlines).first
+    }
+
+    @discardableResult
+    static func updateYTDLP() -> String {
+        if let brew = executablePath(named: "brew"),
+           let ytdlp = executablePath(named: "yt-dlp"),
+           ytdlp.hasPrefix(URL(fileURLWithPath: brew).deletingLastPathComponent().path) {
+            return run(brew, ["upgrade", "yt-dlp"])
+        }
+        if let ytdlp = executablePath(named: "yt-dlp") {
+            return run(ytdlp, ["-U"])
+        }
+        return "yt-dlp is not installed"
+    }
+
+    private static func run(_ executable: String, _ arguments: [String]) -> String {
+        let process = Process()
+        let stdout = Pipe()
+        let stderr = Pipe()
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = arguments
+        process.standardOutput = stdout
+        process.standardError = stderr
+        process.environment = processEnvironment
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return error.localizedDescription
+        }
+        let output = String(data: stdout.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        let error = String(data: stderr.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        return (output + error).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     static func executablePath(named tool: String) -> String? {
         let fileManager = FileManager.default
 

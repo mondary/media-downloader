@@ -58,6 +58,9 @@ private struct SettingsRootView: View {
     @ObservedObject var preferences: PreferencesStoreWrapper
     let onCheckForUpdates: () -> Void
     @State private var accessibilityGranted = AXIsProcessTrusted()
+    @State private var engineVersion: String?
+    @State private var isUpdatingEngine = false
+    @State private var engineUpdateResult: String?
     private let statusTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 
     init(preferences: PreferencesStore, onCheckForUpdates: @escaping () -> Void) {
@@ -69,6 +72,7 @@ private struct SettingsRootView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 appSection
+                engineSection
                 downloadSection
                 socialMediaSection
                 accessibilitySection
@@ -78,6 +82,11 @@ private struct SettingsRootView: View {
             .padding(24)
         }
         .background(Color(NSColor(calibratedWhite: 0.11, alpha: 1)))
+        .task {
+            engineVersion = await Task.detached(priority: .utility) {
+                DependencyChecker.version(ofTool: "yt-dlp")
+            }.value
+        }
         .onChange(of: preferences.autoCopy) { _, _ in
             preferences.saveAutoCopy()
         }
@@ -107,7 +116,7 @@ private struct SettingsRootView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("PKMediaDownloader")
                         .font(.title3.weight(.semibold))
-                                        Text("v1.2026.5 — Native macOS video downloader")
+                                        Text("v1.2026.6 — Native macOS video downloader")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -121,6 +130,55 @@ private struct SettingsRootView: View {
             .padding(14)
             .background(cardBackground)
         }
+    }
+
+    // MARK: - Engine Section
+
+    private var engineSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Download Engine")
+                .font(.headline)
+
+            HStack(spacing: 12) {
+                Image(systemName: "wrench.and.screwdriver")
+                    .font(.system(size: 16))
+                    .frame(width: 24)
+                    .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("yt-dlp \(engineVersion ?? "—")")
+                        .font(.subheadline.weight(.medium))
+                    if let engineUpdateResult {
+                        Text(engineUpdateResult)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(3)
+                    }
+                }
+
+                Spacer()
+
+                Button(isUpdatingEngine ? "Updating…" : "Update") {
+                    isUpdatingEngine = true
+                    engineUpdateResult = nil
+                    Task {
+                        let result = await Task.detached(priority: .userInitiated) {
+                            DependencyChecker.updateYTDLP()
+                        }.value
+                        engineUpdateResult = result
+                        engineVersion = await Task.detached(priority: .utility) {
+                            DependencyChecker.version(ofTool: "yt-dlp")
+                        }.value
+                        isUpdatingEngine = false
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(isUpdatingEngine)
+            }
+        }
+        .padding(14)
+        .background(cardBackground)
     }
 
     // MARK: - Download Section
