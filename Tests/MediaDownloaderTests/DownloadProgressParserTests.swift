@@ -1,4 +1,5 @@
 import XCTest
+import MediaDownloaderCore
 @testable import MediaDownloader
 
 final class DownloadProgressParserTests: XCTestCase {
