@@ -2,7 +2,7 @@
 
 [🇬🇧 EN](README_en.md) · [🇫🇷 FR](README.md)
 
-📦 version **v1.2026.10** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 version **v1.2026.11** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Native macOS video downloader powered by yt-dlp — supports YouTube (playlists), Instagram, X/Twitter, TikTok and thousands more sites.
 
@@ -57,7 +57,7 @@ Simply paste a YouTube playlist URL — the app automatically detects `list=` in
 
 ## 🖥️ CLI (pkmd)
 
-The app bundles a CLI sharing the same engine and history as the Mac app:
+`pkmd` is a **standalone binary** (same engine and history as the app) — shipped inside the app and as a CI artifact:
 
 ```sh
 alias pkmd='/Applications/PKMediaDownloader.app/Contents/MacOS/pkmd'
@@ -87,6 +87,7 @@ swift run
 
 ## 🧾 Changelog
 
+- **v1.2026.11**: `pkmd` becomes a standalone binary (package split into Core + 2 executables)
 - **v1.2026.10**: Bundled `pkmd` CLI (download, list, engines, update-engine)
 - **v1.2026.9**: Default global shortcut fixed to Cmd+Shift+6 (was 8)
 - **v1.2026.8**: GitHub Actions build (tests + DMG/ZIP artifact, no local certificate needed)

@@ -1,4 +1,5 @@
 import Foundation
+import MediaDownloaderCore
 
 enum TrimExportError: LocalizedError {
     case invalidRange

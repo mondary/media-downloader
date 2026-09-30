@@ -1,4 +1,5 @@
 import AppKit
+import MediaDownloaderCore
 import Foundation
 
 @MainActor
@@ -124,7 +125,7 @@ final class AppModel: ObservableObject {
             guard let self else { return }
 
             do {
-                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.10"
+                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.11"
                 let result = try await updateChecker.check(currentVersion: currentVersion)
                 let downloadedUpdate: DownloadedUpdate?
 

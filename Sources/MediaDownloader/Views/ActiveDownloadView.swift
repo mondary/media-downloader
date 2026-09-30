@@ -1,4 +1,5 @@
 import SwiftUI
+import MediaDownloaderCore
 
 struct ActiveDownloadView: View {
     let progress: DownloadProgress

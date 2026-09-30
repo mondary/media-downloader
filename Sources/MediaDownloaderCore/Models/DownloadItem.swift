@@ -1,14 +1,14 @@
 import Foundation
 
-struct DownloadItem: Identifiable, Codable, Hashable {
-    let id: UUID
-    let sourceURL: String
-    let title: String
-    let filePath: String
-    let thumbnailPath: String?
-    let createdAt: Date
+public struct DownloadItem: Identifiable, Codable, Hashable {
+    public let id: UUID
+    public let sourceURL: String
+    public let title: String
+    public let filePath: String
+    public let thumbnailPath: String?
+    public let createdAt: Date
 
-    init(
+    public init(
         id: UUID = UUID(),
         sourceURL: String,
         title: String,
@@ -24,7 +24,7 @@ struct DownloadItem: Identifiable, Codable, Hashable {
         self.createdAt = createdAt
     }
 
-    var displayName: String {
+    public var displayName: String {
         if !title.isEmpty {
             return title
         }
@@ -32,11 +32,11 @@ struct DownloadItem: Identifiable, Codable, Hashable {
         return fileName
     }
 
-    var fileName: String {
+    public var fileName: String {
         URL(fileURLWithPath: filePath).lastPathComponent
     }
 
-    var sourceName: String {
+    public var sourceName: String {
         guard let host = URLComponents(string: sourceURL)?.host else {
             return "Web"
         }

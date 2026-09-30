@@ -1,22 +1,22 @@
 import Foundation
 
-struct DependencyStatus: Equatable {
-    let missingTools: [String]
+public struct DependencyStatus: Equatable {
+    public let missingTools: [String]
 
-    var isSatisfied: Bool {
+    public var isSatisfied: Bool {
         missingTools.isEmpty
     }
 }
 
-enum DependencyChecker {
-    static let installPrompt = "Install ffmpeg and yt-dlp on macOS. Prefer Homebrew if available. Verify both commands work: ffmpeg -version and yt-dlp --version."
+public enum DependencyChecker {
+    public static let installPrompt = "Install ffmpeg and yt-dlp on macOS. Prefer Homebrew if available. Verify both commands work: ffmpeg -version and yt-dlp --version."
 
-    static func check() -> DependencyStatus {
+    public static func check() -> DependencyStatus {
         let missing = ["ffmpeg", "yt-dlp"].filter { executablePath(named: $0) == nil }
         return DependencyStatus(missingTools: missing)
     }
 
-    static func version(ofTool tool: String) -> String? {
+    public static func version(ofTool tool: String) -> String? {
         guard let path = executablePath(named: tool) else { return nil }
         let process = Process()
         let pipe = Pipe()
@@ -39,7 +39,7 @@ enum DependencyChecker {
     }
 
     @discardableResult
-    static func updateYTDLP() -> String {
+    public static func updateYTDLP() -> String {
         if let brew = executablePath(named: "brew"),
            let ytdlp = executablePath(named: "yt-dlp"),
            ytdlp.hasPrefix(URL(fileURLWithPath: brew).deletingLastPathComponent().path) {
@@ -71,7 +71,7 @@ enum DependencyChecker {
         return (output + error).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    static func executablePath(named tool: String) -> String? {
+    public static func executablePath(named tool: String) -> String? {
         let fileManager = FileManager.default
 
         for directory in searchDirectories {
@@ -84,7 +84,7 @@ enum DependencyChecker {
         return nil
     }
 
-    static var processEnvironment: [String: String] {
+    public static var processEnvironment: [String: String] {
         var environment = ProcessInfo.processInfo.environment
         environment["PATH"] = searchDirectories.joined(separator: ":")
         return environment

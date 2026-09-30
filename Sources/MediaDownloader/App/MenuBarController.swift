@@ -1,4 +1,5 @@
 import AppKit
+import MediaDownloaderCore
 import UserNotifications
 
 final class MenuBarController {

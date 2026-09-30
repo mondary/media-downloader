@@ -1,7 +1,7 @@
 import Foundation
 
-enum URLValidator {
-    static func looksLikeWebURL(_ value: String) -> Bool {
+public enum URLValidator {
+    public static func looksLikeWebURL(_ value: String) -> Bool {
         guard let components = URLComponents(string: value.trimmingCharacters(in: .whitespacesAndNewlines)) else {
             return false
         }

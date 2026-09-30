@@ -1,10 +1,10 @@
 import Foundation
 
-final class HistoryStore {
+public final class HistoryStore {
     private let fileManager: FileManager
     private let historyURL: URL
 
-    init(fileManager: FileManager = .default) {
+    public init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
         let support = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support", isDirectory: true)
@@ -12,7 +12,7 @@ final class HistoryStore {
         historyURL = directory.appendingPathComponent("history.json")
     }
 
-    func load() -> [DownloadItem] {
+    public func load() -> [DownloadItem] {
         guard let data = try? Data(contentsOf: historyURL) else {
             return []
         }
@@ -22,7 +22,7 @@ final class HistoryStore {
         return (try? decoder.decode([DownloadItem].self, from: data)) ?? []
     }
 
-    func save(_ history: [DownloadItem]) {
+    public func save(_ history: [DownloadItem]) {
         do {
             try fileManager.createDirectory(
                 at: historyURL.deletingLastPathComponent(),

@@ -1,4 +1,5 @@
 import SwiftUI
+import MediaDownloaderCore
 
 struct HistoryListView: View {
     let items: [DownloadItem]

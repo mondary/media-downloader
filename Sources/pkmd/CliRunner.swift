@@ -1,16 +1,9 @@
 import Foundation
+import MediaDownloaderCore
 
 enum CliRunner {
     private static let subcommands = ["list", "engines", "update-engine"]
     private static var lastRenderedPercent = -1
-
-    static func handles(_ arguments: [String]) -> Bool {
-        let args = arguments.filter { $0 != "--cli" }
-        guard let first = args.first else { return false }
-        if first == "--help" || first == "-h" || first == "help" { return true }
-        if subcommands.contains(first) { return true }
-        return URLValidator.looksLikeWebURL(first)
-    }
 
     static func run(_ arguments: [String]) -> Never {
         let args = arguments.filter { $0 != "--cli" }
@@ -54,7 +47,7 @@ enum CliRunner {
         case "update-engine":
             return await updateEngine()
         case .some(let url) where URLValidator.looksLikeWebURL(url):
-            return await download(url: url, folder: outputFolder ?? PreferencesStore().downloadFolder)
+            return await download(url: url, folder: outputFolder ?? defaultDownloadFolder())
         default:
             print("unknown command: \(positional.first ?? "")")
             printUsage()
@@ -75,6 +68,16 @@ enum CliRunner {
 
         History and download folder are shared with the Mac app.
         """)
+    }
+
+    private static func defaultDownloadFolder() -> URL {
+        if let path = UserDefaults(suiteName: "com.pkmediadownloader.app")?.string(forKey: "downloadFolderPath"),
+           !path.isEmpty {
+            return URL(fileURLWithPath: path, isDirectory: true)
+        }
+
+        return FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads", isDirectory: true)
     }
 
     private static func download(url: String, folder: URL) async -> Int32 {

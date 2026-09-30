@@ -8,10 +8,17 @@ let package = Package(
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "PKMediaDownloader", targets: ["MediaDownloader"])
+        .executable(name: "PKMediaDownloader", targets: ["MediaDownloader"]),
+        .executable(name: "pkmd", targets: ["pkmd"]),
+        .library(name: "MediaDownloaderCore", targets: ["MediaDownloaderCore"])
     ],
     targets: [
-        .executableTarget(name: "MediaDownloader"),
-        .testTarget(name: "MediaDownloaderTests", dependencies: ["MediaDownloader"])
+        .target(name: "MediaDownloaderCore"),
+        .executableTarget(name: "MediaDownloader", dependencies: ["MediaDownloaderCore"]),
+        .executableTarget(name: "pkmd", dependencies: ["MediaDownloaderCore"]),
+        .testTarget(
+            name: "MediaDownloaderTests",
+            dependencies: ["MediaDownloader", "MediaDownloaderCore"]
+        )
     ]
 )

@@ -1,4 +1,5 @@
 import Foundation
+import MediaDownloaderCore
 
 struct ActiveTrimSession: Identifiable, Equatable {
     let id = UUID()

@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.11] - 2026-09-30
+
+### Changed
+- `pkmd` devient un binaire indépendant : découpage du package en `MediaDownloaderCore` (moteur partagé) + cibles exécutables `PKMediaDownloader` et `pkmd` — le CLI ne lance plus l'app et démarre instantanément
+
 ## [v1.2026.10] - 2026-09-29
 
 ### Added

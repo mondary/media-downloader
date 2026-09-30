@@ -4,7 +4,7 @@ set -euo pipefail
 APP_NAME="PKMediaDownloader"
 BUNDLE_ID="${BUNDLE_ID:-com.pkmediadownloader.app}"
 MIN_SYSTEM_VERSION="14.0"
-APP_VERSION="${APP_VERSION:-v1.2026.10}"
+APP_VERSION="${APP_VERSION:-v1.2026.11}"
 APP_BUILD="${APP_BUILD:-1}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -72,14 +72,17 @@ RELEASE_DMG="$RELEASE_DIR/$APP_NAME-$APP_VERSION-macos-$ARCH.dmg"
 
 swift test
 swift build -c release
+swift build -c release --product pkmd
 BUILD_BINARY="$(swift build -c release --show-bin-path)/$APP_NAME"
+PKMD_BINARY="$(swift build -c release --product pkmd --show-bin-path)/pkmd"
 
 rm -rf "$RELEASE_DIR"
 mkdir -p "$APP_MACOS" "$APP_RESOURCES"
 cp "$BUILD_BINARY" "$APP_BINARY"
 chmod +x "$APP_BINARY"
-printf '#!/bin/sh\nexec "$(dirname "$0")/%s" --cli "$@"\n' "$APP_NAME" > "$APP_MACOS/pkmd"
+cp "$PKMD_BINARY" "$APP_MACOS/pkmd"
 chmod +x "$APP_MACOS/pkmd"
+cp "$PKMD_BINARY" "$RELEASE_DIR/pkmd-$APP_VERSION-macos-$ARCH"
 cp "$APP_ICON" "$APP_RESOURCES/AppIcon.icns"
 
 cat >"$INFO_PLIST" <<PLIST

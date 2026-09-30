@@ -1,24 +1,24 @@
 import Foundation
 
-actor DownloadProgressParser {
+public actor DownloadProgressParser {
     private let sourceURL: String
     private var pendingStandardOutput = ""
     private var pendingStandardError = ""
     private var pendingCompletedDownloads = ""
 
-    init(sourceURL: String) {
+public init(sourceURL: String) {
         self.sourceURL = sourceURL
     }
 
-    func consumeStandardOutput(_ output: String) -> [DownloadProgress] {
+    public func consumeStandardOutput(_ output: String) -> [DownloadProgress] {
         consume(output, pendingOutput: &pendingStandardOutput)
     }
 
-    func consumeStandardError(_ output: String) -> [DownloadProgress] {
+    public func consumeStandardError(_ output: String) -> [DownloadProgress] {
         consume(output, pendingOutput: &pendingStandardError)
     }
 
-    func consumeCompletedDownloads(_ output: String) -> [CompletedDownload] {
+    public func consumeCompletedDownloads(_ output: String) -> [CompletedDownload] {
         pendingCompletedDownloads += output
         let lines = pendingCompletedDownloads.components(separatedBy: .newlines)
         pendingCompletedDownloads = lines.last ?? ""

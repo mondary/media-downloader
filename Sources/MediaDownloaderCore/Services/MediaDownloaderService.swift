@@ -1,11 +1,11 @@
 import Foundation
 
-enum MediaDownloaderError: LocalizedError {
+public enum MediaDownloaderError: LocalizedError {
     case missingTool(String)
     case processFailed(String)
     case missingOutputFile
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .missingTool(let tool):
             return "\(tool) was not found in PATH."
@@ -17,10 +17,12 @@ enum MediaDownloaderError: LocalizedError {
     }
 }
 
-actor MediaDownloaderService {
+public actor MediaDownloaderService {
     private let fileManager = FileManager.default
 
-    func download(
+    public init() {}
+
+    public func download(
         sourceURL: String,
         destinationFolder: URL,
         cookiesPath: String? = nil,
