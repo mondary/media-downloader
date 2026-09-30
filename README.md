@@ -2,7 +2,7 @@
 
 [🇫🇷 FR](README.md) · [🇬🇧 EN](README_en.md)
 
-📦 version **v1.2026.9** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 version **v1.2026.10** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Téléchargeur vidéo natif macOS basé sur yt-dlp — supporte YouTube (playlists), Instagram, X/Twitter, TikTok et des milliers d'autres sites.
 
@@ -55,6 +55,19 @@ Colle simplement une URL de playlist YouTube — l'app détecte automatiquement 
 | **Tab** | basculer entre input et historique |
 | **↑↓** | Naviguer dans l'historique |
 
+## 🖥️ CLI (pkmd)
+
+L'app embarque un CLI qui partage le même moteur et le même historique que l'app Mac :
+
+```sh
+alias pkmd='/Applications/PKMediaDownloader.app/Contents/MacOS/pkmd'
+
+pkmd https://youtu.be/...   # télécharge (progression inline)
+pkmd list 20                # 20 dernières entrées d'historique
+pkmd engines                # moteur : chemin + version yt-dlp
+pkmd update-engine          # met à jour yt-dlp
+```
+
 ## 📦 Build & Run
 
 ```sh
@@ -74,6 +87,7 @@ swift run
 
 ## 🧾 Changelog
 
+- **v1.2026.10** : CLI `pkmd` embarqué (download, list, engines, update-engine)
 - **v1.2026.9** : Raccourci global par défaut corrigé en Cmd+Shift+6 (était 8)
 - **v1.2026.8** : Build GitHub Actions (tests + DMG/ZIP en artefact, sans certificat local)
 - **v1.2026.7** : « Check for Updates » vérifie le dépôt fork au lieu de l'amont

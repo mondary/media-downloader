@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.10] - 2026-09-29
+
+### Added
+- CLI `pkmd` embarqué dans l'app (même moteur, même historique) : `pkmd <url>`, `list`, `engines`, `update-engine` — lanceur `Contents/MacOS/pkmd`
+
 ## [v1.2026.9] - 2026-09-29
 
 ### Fixed

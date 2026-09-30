@@ -4,7 +4,7 @@ set -euo pipefail
 APP_NAME="PKMediaDownloader"
 BUNDLE_ID="${BUNDLE_ID:-com.pkmediadownloader.app}"
 MIN_SYSTEM_VERSION="14.0"
-APP_VERSION="${APP_VERSION:-v1.2026.9}"
+APP_VERSION="${APP_VERSION:-v1.2026.10}"
 APP_BUILD="${APP_BUILD:-1}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -78,6 +78,8 @@ rm -rf "$RELEASE_DIR"
 mkdir -p "$APP_MACOS" "$APP_RESOURCES"
 cp "$BUILD_BINARY" "$APP_BINARY"
 chmod +x "$APP_BINARY"
+printf '#!/bin/sh\nexec "$(dirname "$0")/%s" --cli "$@"\n' "$APP_NAME" > "$APP_MACOS/pkmd"
+chmod +x "$APP_MACOS/pkmd"
 cp "$APP_ICON" "$APP_RESOURCES/AppIcon.icns"
 
 cat >"$INFO_PLIST" <<PLIST

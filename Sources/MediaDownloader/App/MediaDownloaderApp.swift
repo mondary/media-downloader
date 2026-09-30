@@ -6,6 +6,11 @@ enum MediaDownloaderApp {
     private static var delegate: AppDelegate?
 
     static func main() {
+        let arguments = Array(ProcessInfo.processInfo.arguments.dropFirst())
+        if arguments.contains("--show-dependency-setup") == false, CliRunner.handles(arguments) {
+            CliRunner.run(arguments)
+        }
+
         let app = NSApplication.shared
         let delegate = AppDelegate()
         Self.delegate = delegate
