@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.22] - 2026-10-02
+
+### Changed
+- Rangement du dépôt : `image.png` archivée sous `archive/`, thème VS Code assorti à la vitrine sombre, environnement `.codex` retiré du suivi.
+
 ## [v1.2026.21] - 2026-10-02
 
 ### Changed
