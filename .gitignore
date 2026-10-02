@@ -1,7 +1,6 @@
 .build/
 dist/
 graphify-out/
-store/website/
 .DS_Store
 Icon?
 *.xcuserdata
@@ -19,3 +18,18 @@ DerivedData/
 *.provisionprofile
 *.key
 .codex/
+.agent
+.inspi
+/AGENT.md
+/AGENTS.md
+/CLAUDE.md
+/CODEX.md
+/GEMINI.md
+/GLM.md
+/OPENCODE.md
+.*
+node_modules/
+build/
+.venv/
+__pycache__/
+*.log

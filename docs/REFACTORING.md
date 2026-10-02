@@ -17,11 +17,12 @@ d'entrée de SwiftPM, de la documentation et du build.
 
 - `icon.png` **reste à la racine** par convention PK ; `Resources/AppIcon.icns`
   reste l'icône de build.
-- `image.png` est identique à `store/screenshots/01-apercu-projet.png`
+- `image.png` était identique à `store/v1/screenshots/01-apercu-projet.png`
   (SHA-256 vérifié). Cette image est une **icône**, pas une capture
   d'interface. Après validation des références externes, garder seulement la copie
-  sous `store/` ou archiver l'original ; les vraies captures d'app avec données
-  fictives sont maintenant `01-app-history.png` et `02-settings.png`.
+  sous `store/v1/` ou archiver l'original ; les vraies captures d'app avec données
+  fictives sont maintenant dans `store/v2/screenshots/`. L'utilisateur a déjà
+  déplacé `image.png` vers `archive/` avant cette refonte : ne pas modifier ce choix.
 
 ## 3. Scripts et release
 
@@ -30,8 +31,11 @@ d'entrée de SwiftPM, de la documentation et du build.
 - Quand un DMG signé/notarisé sera publié, générer le cask depuis **l'asset
   distant** avec `script/generate_cask.sh`, puis le déposer dans le tap
   `mondary/homebrew-tap`. Ne jamais deviner son SHA-256.
-- `store/index.html` est la source de la landing ; `script/website.sh` produit
-  `store/website/` (ignoré) pour le déploiement. Aucun upload n'est implicite.
+- `store/website/index.html` est la version courante éditable et déployable ;
+  `script/website.sh` en vérifie les fichiers. Les anciennes versions sont
+  préservées dans `store/v1/`, `store/v2/` et `store/v3/`. À la prochaine
+  refonte, archiver `website/` en `v4/` avant de créer le nouveau `website/`.
+  Aucun upload n'est implicite.
 
 ## Ordre recommandé
 

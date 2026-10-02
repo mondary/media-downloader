@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PKMediaDownloader — téléchargez, retrouvez, découpez</title>
+  <meta name="description" content="Une app macOS native pour télécharger avec yt-dlp, retrouver ses vidéos et découper un extrait.">
+  <meta property="og:title" content="PKMediaDownloader — téléchargez, retrouvez, découpez">
+  <meta property="og:description" content="Une app macOS native pour télécharger avec yt-dlp, retrouver ses vidéos et découper un extrait.">
+  <meta property="og:image" content="assets/card-1200x630.png">
+  <link rel="icon" href="assets/icon.png">
+  <script>
+    (() => {
+      let saved;
+      try { saved = localStorage.getItem('pkmd-language'); } catch (_) {}
+      const preferred = saved === 'fr' || saved === 'en' ? saved :
+        ((navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language])
+          .map(value => (value || '').toLowerCase().split('-')[0])
+          .find(value => value === 'fr' || value === 'en') || 'fr');
+      document.documentElement.lang = preferred;
+      if (preferred === 'en') document.documentElement.classList.add('i18n-pending');
+    })();
+  </script>
+  <style>
+    :root { color-scheme: dark; --bg:#0b0d12; --panel:#141821; --line:#303644; --text:#f1f3f7; --muted:#acb4c3; --accent:#b5e64a; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    html.i18n-pending body { visibility:hidden; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.55 -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif; }
+    a { color:inherit; } a:focus-visible,button:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+    .wrap { width:min(1160px,calc(100% - 48px)); margin:auto; }
+    header { border-bottom:1px solid var(--line); }
+    nav { min-height:76px; display:flex; align-items:center; gap:24px; }
+    .brand { font-weight:750; letter-spacing:-.04em; text-decoration:none; white-space:nowrap; }
+    .brand img { width:34px; height:34px; object-fit:contain; vertical-align:middle; margin-right:8px; }
+    nav .spacer { flex:1; } nav .navlink { font-size:14px; color:var(--muted); text-decoration:none; }
+    .langs { display:flex; gap:5px; border:1px solid var(--line); border-radius:99px; padding:3px; }
+    .langs button { border:0; border-radius:99px; padding:5px 9px; color:var(--muted); background:transparent; cursor:pointer; font:inherit; font-size:12px; }
+    .langs button[aria-pressed="true"] { background:var(--text); color:var(--bg); }
+    .hero { padding:90px 0 100px; }
+    .eyebrow { text-transform:uppercase; letter-spacing:.18em; font-size:12px; font-weight:700; color:var(--accent); }
+    h1 { font-size:clamp(52px,7vw,108px); line-height:1; letter-spacing:-.045em; margin:20px 0 28px; max-width:850px; }
+    .lead { color:var(--muted); font-size:clamp(18px,2vw,23px); max-width:610px; }
+    .hero-art { margin-top:70px; border:1px solid var(--line); border-radius:20px; background:#000; overflow:hidden; }
+    .hero-art img { display:block; width:100%; }
+    .actions { display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-top:34px; }
+    .button { display:inline-block; border:1px solid var(--accent); background:var(--accent); color:#10150b; border-radius:8px; padding:13px 20px; text-decoration:none; font-weight:700; }
+    .button.secondary { background:transparent; color:var(--text); border-color:var(--line); }
+    .note { font-size:13px; color:var(--muted); }
+    section { padding:90px 0; border-top:1px solid var(--line); }
+    h2 { font-size:clamp(32px,4vw,58px); line-height:1.08; letter-spacing:-.035em; margin:12px 0 38px; max-width:780px; }
+    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+    .step { padding:36px; min-height:220px; border-right:1px solid var(--line); } .step:last-child { border:0; }
+    .number { color:var(--accent); font:700 13px ui-monospace,SFMono-Regular,monospace; }
+    h3 { font-size:24px; letter-spacing:-.035em; margin:22px 0 8px; } p { margin:0; }
+    .step p,.split p { color:var(--muted); }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:12%; align-items:start; }
+    .split h2 { margin-top:0; }
+    .feature-list { list-style:none; padding:0; margin:0; }
+    .feature-list li { padding:18px 0; border-bottom:1px solid var(--line); }
+    .feature-list strong { display:block; font-size:19px; }
+    .install { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:clamp(24px,5vw,60px); }
+    .install h2 { margin-bottom:20px; } code { display:block; padding:16px 18px; border:1px solid var(--line); border-radius:8px; overflow-x:auto; color:var(--accent); font-size:14px; margin:20px 0 10px; user-select:text; }
+    .install .note { max-width:750px; }
+    footer { padding:42px 0; border-top:1px solid var(--line); color:var(--muted); font-size:14px; }
+    footer .wrap { display:flex; flex-wrap:wrap; gap:20px; } footer a { color:var(--text); }
+    @media (max-width:800px) { .split { grid-template-columns:1fr; } .hero { padding:70px 0; } .hero-art { margin-top:48px; } .steps { grid-template-columns:1fr; } .step { border-right:0; border-bottom:1px solid var(--line); min-height:0; } nav .navlink { display:none; } section { padding:65px 0; } }
+    @media (max-width:450px) { .wrap { width:calc(100% - 32px); } .brand { font-size:14px; } .brand img { width:28px; height:28px; } h1 { font-size:52px; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+  <header><nav class="wrap" aria-label="Navigation principale" data-fr-aria-label="Navigation principale" data-en-aria-label="Main navigation">
+    <a class="brand" href="#top"><img src="assets/icon.png" alt="">PKMediaDownloader</a>
+    <span class="spacer"></span><a class="navlink" href="#workflow" data-fr="Fonctionnement" data-en="How it works">Fonctionnement</a><a class="navlink" href="#install" data-fr="Installation" data-en="Install">Installation</a>
+    <div class="langs" role="group" aria-label="Langue / Language"><button type="button" data-language="fr" aria-pressed="true">FR</button><button type="button" data-language="en" aria-pressed="false">EN</button></div>
+  </nav></header>
+  <main id="top">
+    <div class="wrap hero">
+      <div><p class="eyebrow" data-fr="macOS · vidéo · sources publiques" data-en="macOS · video · public source">macOS · vidéo · sources publiques</p>
+        <h1 data-fr="Vos vidéos. À portée de main." data-en="Your videos. Within reach.">Vos vidéos. À portée de main.</h1>
+        <p class="lead" data-fr="Collez un lien, téléchargez avec yt-dlp, puis retrouvez et découpez vos vidéos dans une app native pour Mac." data-en="Paste a link, download with yt-dlp, then find and trim your videos in a native Mac app.">Collez un lien, téléchargez avec yt-dlp, puis retrouvez et découpez vos vidéos dans une app native pour Mac.</p>
+        <div class="actions"><a class="button" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg" data-fr="Télécharger le DMG ↗" data-en="Download the DMG ↗">Télécharger le DMG ↗</a><span class="note">macOS 14+ · Apple Silicon</span></div>
+      </div><div class="hero-art"><img src="screenshots/01-app-history.png" alt="Fenêtre de PKMediaDownloader avec trois téléchargements fictifs dans l’historique" data-fr-alt="Fenêtre de PKMediaDownloader avec trois téléchargements fictifs dans l’historique" data-en-alt="PKMediaDownloader window with three fictitious downloads in history"></div>
+    </div>
+    <section id="workflow"><div class="wrap"><p class="eyebrow" data-fr="Le parcours" data-en="The flow">Le parcours</p><h2 data-fr="Du lien à l’extrait, sans quitter votre Mac." data-en="From link to clip, without leaving your Mac.">Du lien à l’extrait, sans quitter votre Mac.</h2>
+      <div class="steps"><div class="step"><span class="number">01 / URL</span><h3 data-fr="Collez" data-en="Paste">Collez</h3><p data-fr="Une vidéo ou une playlist YouTube. yt-dlp prend en charge de nombreux autres sites." data-en="A video or YouTube playlist. yt-dlp supports many more sites.">Une vidéo ou une playlist YouTube. yt-dlp prend en charge de nombreux autres sites.</p></div>
+      <div class="step"><span class="number">02 / MP4</span><h3 data-fr="Téléchargez" data-en="Download">Téléchargez</h3><p data-fr="Suivez la progression et retrouvez chaque élément dans l’historique." data-en="Watch progress and find each item in your history.">Suivez la progression et retrouvez chaque élément dans l’historique.</p></div>
+      <div class="step"><span class="number">03 / CLIP</span><h3 data-fr="Découpez" data-en="Trim">Découpez</h3><p data-fr="Gardez un extrait, enregistrez-le ou copiez-le pour le partager." data-en="Keep a clip, save it or copy it to share.">Gardez un extrait, enregistrez-le ou copiez-le pour le partager.</p></div></div>
+    </div></section>
+    <section><div class="wrap split"><div><p class="eyebrow" data-fr="Pensé pour macOS" data-en="Made for macOS">Pensé pour macOS</p><h2 data-fr="Un geste rapide. Un vrai historique." data-en="One quick gesture. A real history.">Un geste rapide. Un vrai historique.</h2><p data-fr="Raccourci global, accès dans la barre des menus et copie automatique optionnelle. Les réseaux sociaux nécessitant une session peuvent utiliser les cookies du navigateur ou un fichier cookies.txt." data-en="Global shortcut, menu bar access and optional automatic copy. Social platforms requiring a session can use browser cookies or a cookies.txt file.">Raccourci global, accès dans la barre des menus et copie automatique optionnelle. Les réseaux sociaux nécessitant une session peuvent utiliser les cookies du navigateur ou un fichier cookies.txt.</p></div>
+      <ul class="feature-list"><li><strong data-fr="Raccourci ⌘⇧6" data-en="Shortcut ⌘⇧6">Raccourci ⌘⇧6</strong><span data-fr="L’app depuis n’importe où." data-en="Open the app from anywhere.">L’app depuis n’importe où.</span></li><li><strong data-fr="Historique et extraits" data-en="History and clips">Historique et extraits</strong><span data-fr="Retrouver, copier, couper." data-en="Find, copy, trim.">Retrouver, copier, couper.</span></li><li><strong data-fr="Cobalt en secours" data-en="Cobalt as a fallback">Cobalt en secours</strong><span data-fr="Un lien externe si un site résiste au téléchargement ; aucun transfert automatique de vos liens." data-en="An external option if a site resists downloading; your links are never sent automatically.">Un lien externe si un site résiste au téléchargement ; aucun transfert automatique de vos liens.</span> <a href="https://cobalt.tools/" target="_blank" rel="noopener noreferrer">cobalt.tools ↗</a> · <a href="https://github.com/imputnet/cobalt" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li></ul>
+    </div></section>
+    <section id="install"><div class="wrap install"><p class="eyebrow" data-fr="Installer" data-en="Install">Installer</p><h2 data-fr="À vous de choisir." data-en="Choose your way in.">À vous de choisir.</h2><p data-fr="Installez avec Homebrew, ou téléchargez le DMG Apple Silicon depuis la release GitHub." data-en="Install with Homebrew, or download the Apple Silicon DMG from GitHub Releases.">Installez avec Homebrew, ou téléchargez le DMG Apple Silicon depuis la release GitHub.</p><code id="brew-command">brew install --cask mondary/tap/pkmedia-downloader</code><button type="button" class="button secondary" id="copy-brew" data-fr="Copier la commande" data-en="Copy command">Copier la commande</button><div class="actions"><a class="button" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg" data-fr="Télécharger le DMG ↗" data-en="Download the DMG ↗">Télécharger le DMG ↗</a></div><code>curl -fL -o PKMediaDownloader-v1.2026.12-macos-arm64.dmg https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg</code><p class="note" data-fr="Version 1.2026.12 · macOS 14+ · Apple Silicon. DMG signé ad hoc, non notarisé : une autorisation manuelle dans Confidentialité et sécurité peut être nécessaire au premier lancement. yt-dlp et ffmpeg sont requis (installés par le cask)." data-en="Version 1.2026.12 · macOS 14+ · Apple Silicon. Ad-hoc signed, not notarized: manual approval in Privacy & Security may be needed on first launch. yt-dlp and ffmpeg are required (installed by the cask).">Version 1.2026.12 · macOS 14+ · Apple Silicon. DMG signé ad hoc, non notarisé : une autorisation manuelle dans Confidentialité et sécurité peut être nécessaire au premier lancement. yt-dlp et ffmpeg sont requis (installés par le cask).</p></div></section>
+  </main>
+  <footer><div class="wrap"><span>PKMediaDownloader</span><a href="https://github.com/mondary/media-downloader">GitHub ↗</a><a href="https://github.com/pixel-point/media-downloader" data-fr="Projet original ↗" data-en="Original project ↗">Projet original ↗</a><a href="https://ko-fi.com/pouark" data-fr="Soutenir sur Ko-fi ↗" data-en="Support on Ko-fi ↗">Soutenir sur Ko-fi ↗</a></div></footer>
+  <script>
+    (() => {
+      const meta = {
+        fr: {title:'PKMediaDownloader — téléchargez, retrouvez, découpez',description:'Une app macOS native pour télécharger avec yt-dlp, retrouver ses vidéos et découper un extrait.'},
+        en: {title:'PKMediaDownloader — download, find, trim',description:'A native macOS app to download with yt-dlp, find your videos and trim a clip.'}
+      };
+      function apply(language, remember) {
+        document.querySelectorAll('[data-fr]').forEach(node => { node.textContent = node.dataset[language]; });
+        document.querySelectorAll('[data-fr-alt]').forEach(node => { node.alt = node.dataset[language + 'Alt']; });
+        document.querySelectorAll('[data-fr-aria-label]').forEach(node => { node.setAttribute('aria-label', node.dataset[language + 'AriaLabel']); });
+        document.querySelectorAll('[data-language]').forEach(node => { node.setAttribute('aria-pressed', String(node.dataset.language === language)); });
+        document.title = meta[language].title;
+        document.querySelector('meta[name="description"]').content = meta[language].description;
+        document.querySelector('meta[property="og:title"]').content = meta[language].title;
+        document.querySelector('meta[property="og:description"]').content = meta[language].description;
+        document.documentElement.lang = language;
+        document.documentElement.classList.remove('i18n-pending');
+        if (remember) { try { localStorage.setItem('pkmd-language', language); } catch (_) {} }
+      }
+      apply(document.documentElement.lang === 'en' ? 'en' : 'fr', false);
+      document.querySelectorAll('[data-language]').forEach(node => node.addEventListener('click', () => apply(node.dataset.language, true)));
+      document.getElementById('copy-brew').addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(document.getElementById('brew-command').textContent);
+          const button = document.getElementById('copy-brew');
+          button.textContent = document.documentElement.lang === 'en' ? 'Copied' : 'Copié';
+          setTimeout(() => { button.textContent = button.dataset[document.documentElement.lang]; }, 1600);
+        } catch (_) {
+          document.getElementById('brew-command').focus();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

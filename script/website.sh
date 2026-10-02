@@ -3,9 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="$ROOT/store/website"
-mkdir -p "$DEST/assets" "$DEST/screenshots"
-cp "$ROOT/store/index.html" "$DEST/index.html"
-cp "$ROOT/store/assets/icon.png" "$DEST/assets/icon.png"
-cp "$ROOT/store/assets/card-1200x630.png" "$DEST/assets/card-1200x630.png"
-cp "$ROOT/store/screenshots/01-app-history.png" "$DEST/screenshots/01-app-history.png"
-echo "Bundle prêt à servir : $DEST (déposer son contenu, pas le dossier website)."
+[[ -f "$DEST/index.html" && -f "$DEST/style.css" && -f "$DEST/site.js" ]] || { echo 'Page store/website manquante.' >&2; exit 1; }
+for asset in icon.png app-history.png settings.png social-card.png banner-1544x500.png thumb-bbb.jpg thumb-sintel.jpg thumb-tears.jpg kofi-logomark.png; do
+  [[ -f "$DEST/assets/$asset" ]] || { echo "Asset manquant : $asset" >&2; exit 1; }
+done
+echo "Page prête à servir : $DEST (déposer son contenu, pas le dossier website)."

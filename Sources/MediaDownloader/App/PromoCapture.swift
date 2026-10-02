@@ -19,19 +19,21 @@ enum PromoCapture {
         defer { defaults.removePersistentDomain(forName: suite) }
         defaults.set("/Users/demo/Downloads", forKey: "downloadFolderPath")
 
+        let thumbnails = ["thumb-bbb.jpg", "thumb-sintel.jpg", "thumb-tears.jpg"]
+            .map { directory.appendingPathComponent($0).path }
         let items = [
-            DownloadItem(sourceURL: "https://www.youtube.com/watch?v=demo-nord", title: "Coastline / study", filePath: "/Users/demo/Downloads/Coastline.mp4", thumbnailPath: nil, createdAt: .now),
-            DownloadItem(sourceURL: "https://vimeo.com/000000", title: "Field notes", filePath: "/Users/demo/Downloads/Field-notes.mp4", thumbnailPath: nil, createdAt: .now.addingTimeInterval(-3600)),
-            DownloadItem(sourceURL: "https://www.youtube.com/watch?v=demo-city", title: "City at dusk", filePath: "/Users/demo/Downloads/City-at-dusk.mp4", thumbnailPath: nil, createdAt: .now.addingTimeInterval(-7200))
+            DownloadItem(sourceURL: "https://www.youtube.com/watch?v=aqz-KE-bpKQ", title: "Big Buck Bunny", filePath: "/Users/demo/Downloads/Big-Buck-Bunny.mp4", thumbnailPath: thumbnails[0], createdAt: .now),
+            DownloadItem(sourceURL: "https://www.youtube.com/watch?v=eRsGyueVLvQ", title: "Sintel", filePath: "/Users/demo/Downloads/Sintel.mp4", thumbnailPath: thumbnails[1], createdAt: .now.addingTimeInterval(-3600)),
+            DownloadItem(sourceURL: "https://www.youtube.com/watch?v=R6MlUcmOul8", title: "Tears of Steel", filePath: "/Users/demo/Downloads/Tears-of-Steel.mp4", thumbnailPath: thumbnails[2], createdAt: .now.addingTimeInterval(-7200))
         ]
         let app = NSApplication.shared
         app.setActivationPolicy(.prohibited)
-        app.appearance = NSAppearance(named: .darkAqua)
+        app.appearance = NSAppearance(named: .aqua)
         let model = AppModel(preferences: PreferencesStore(defaults: defaults), previewHistory: items)
         let size = NSSize(width: 940, height: 450)
         let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -10000, y: -10000), size: size), styleMask: [.titled], backing: .buffered, defer: false)
         window.title = "PKMediaDownloader"
-        window.appearance = NSAppearance(named: .darkAqua)
+        window.appearance = NSAppearance(named: .aqua)
         let hosting = NSHostingView(rootView: ContentView(model: model).frame(width: size.width, height: size.height))
         window.contentView = hosting
         window.orderFront(nil)
@@ -44,6 +46,8 @@ enum PromoCapture {
         let settings = SettingsWindowController(preferences: PreferencesStore(defaults: defaults), onCheckForUpdates: {})
         if let settingsWindow = settings.window, let content = settingsWindow.contentView {
             settingsWindow.setFrameOrigin(NSPoint(x: -10000, y: -10000))
+            // Settings use a deliberately dark custom surface; match their
+            // production appearance so system labels keep their contrast.
             settingsWindow.appearance = NSAppearance(named: .darkAqua)
             settingsWindow.orderFront(nil)
             RunLoop.current.run(until: Date().addingTimeInterval(0.3))

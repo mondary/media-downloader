@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f4f5">
+  <title>PKMediaDownloader — télécharge, garde, découpe.</title>
+  <meta name="description" content="Une app macOS native qui transforme un lien en fichier sur votre Mac : téléchargement yt-dlp, historique et découpe d'extrait. DMG ou Homebrew.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PKMediaDownloader — télécharge, garde, découpe.">
+  <meta property="og:description" content="Une app macOS native qui transforme un lien en fichier sur votre Mac : téléchargement yt-dlp, historique et découpe d'extrait.">
+  <meta property="og:image" content="assets/social-card.png">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (() => {
+      let saved;
+      try { saved = localStorage.getItem('pkmd-language'); } catch (_) {}
+      const choices = navigator.languages?.length ? navigator.languages : [navigator.language];
+      const language = saved === 'fr' || saved === 'en' ? saved :
+        (choices.map(value => (value || '').toLowerCase().split('-')[0]).find(value => value === 'fr' || value === 'en') || 'fr');
+      document.documentElement.lang = language;
+      if (language === 'en') document.documentElement.classList.add('i18n-pending');
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main" data-fr="Aller au contenu" data-en="Skip to content">Aller au contenu</a>
+  <nav class="topbar" aria-label="Barre supérieure" data-fr-aria-label="Barre supérieure" data-en-aria-label="Top bar">
+    <a class="brand" href="#top"><img src="assets/icon.png" width="22" height="22" alt=""><span>PKMediaDownloader</span></a>
+    <div class="topbar-links">
+      <a href="#parcours" data-fr="Le parcours" data-en="The flow">Le parcours</a>
+      <a href="#app" data-fr="Dans l’app" data-en="In the app">Dans l’app</a>
+      <a href="#install" data-fr="Installer" data-en="Install">Installer</a>
+      <a href="https://github.com/mondary/media-downloader" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+    </div>
+    <a class="kofi-button kofi-top" href="https://ko-fi.com/pouark" target="_blank" rel="noopener noreferrer" aria-label="Soutenir PKMediaDownloader sur Ko-fi" data-fr-aria-label="Soutenir PKMediaDownloader sur Ko-fi" data-en-aria-label="Support PKMediaDownloader on Ko-fi"><img src="assets/kofi-logomark.png" width="25" height="21" alt=""><span>Ko-fi</span></a>
+    <div class="language" role="group" aria-label="Langue / Language"><button type="button" data-language="fr" aria-pressed="true">FR</button><span aria-hidden="true">·</span><button type="button" data-language="en" aria-pressed="false">EN</button></div>
+  </nav>
+
+  <main id="main">
+    <header class="hero" id="top">
+      <div class="hero-inner">
+        <p class="hero-note"><span class="pill" data-fr="v1.2026.12 disponible" data-en="v1.2026.12 available">v1.2026.12 disponible</span><span class="pill ghost" data-fr="natif macOS · yt-dlp" data-en="macOS native · yt-dlp">natif macOS · yt-dlp</span></p>
+        <h1><span data-fr="Télécharge. Garde." data-en="Download. Keep.">Télécharge. Garde.</span><span data-fr="Découpe." data-en="Trim.">Découpe.</span></h1>
+        <p class="lede" data-fr="PKMediaDownloader transforme un lien en fichier sur votre Mac. Téléchargement par yt-dlp, historique pour tout retrouver, découpe pour ne garder que l’extrait. App native, sans compte." data-en="PKMediaDownloader turns a link into a file on your Mac. yt-dlp downloads, history keeps track, trim keeps only the clip you need. A native app, no account.">PKMediaDownloader transforme un lien en fichier sur votre Mac. Téléchargement par yt-dlp, historique pour tout retrouver, découpe pour ne garder que l’extrait. App native, sans compte.</p>
+        <div class="hero-actions">
+          <a class="btn dark" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg"><span data-fr="Télécharger pour macOS" data-en="Download for macOS">Télécharger pour macOS</span><span aria-hidden="true">↗</span></a>
+          <a class="btn" href="#parcours" data-fr="Voir le parcours ↓" data-en="See the flow ↓">Voir le parcours ↓</a>
+        </div>
+        <p class="hero-meta" data-fr="macOS 14+ · Apple Silicon · DMG ou Homebrew · gratuit" data-en="macOS 14+ · Apple Silicon · DMG or Homebrew · free">macOS 14+ · Apple Silicon · DMG ou Homebrew · gratuit</p>
+
+        <div class="demo">
+          <div class="demo-tabs" role="tablist" aria-label="Aperçus de l’application" data-fr-aria-label="Aperçus de l’application" data-en-aria-label="App previews">
+            <button type="button" role="tab" id="tab-history" aria-controls="panel-capture" aria-selected="true" data-panel="history" data-fr="Historique" data-en="History">Historique</button>
+            <button type="button" role="tab" id="tab-settings" aria-controls="panel-capture" aria-selected="false" data-panel="settings" tabindex="-1" data-fr="Réglages" data-en="Settings">Réglages</button>
+          </div>
+          <div class="framed" id="panel-capture" role="tabpanel" aria-labelledby="tab-history">
+            <img class="capture capture-history is-active" src="assets/app-history.png" width="1548" height="869" alt="Interface claire de PKMediaDownloader avec champ de lien et historique de trois entrées fictives" data-fr-alt="Interface claire de PKMediaDownloader avec champ de lien et historique de trois entrées fictives" data-en-alt="Light PKMediaDownloader interface with link field and three fictional history entries">
+            <img class="capture capture-settings" src="assets/settings.png" width="1040" height="1096" alt="Réglages natifs de PKMediaDownloader avec préférences fictives" data-fr-alt="Réglages natifs de PKMediaDownloader avec préférences fictives" data-en-alt="Native PKMediaDownloader settings with fictional preferences">
+          </div>
+          <p class="demo-caption" data-fr="Captures natives de l’app, avec données fictives — pas une maquette." data-en="Native app captures with fictional data — not a mockup.">Captures natives de l’app, avec données fictives — pas une maquette.</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>YouTube</span><span>Playlists</span><span>Instagram</span><span>X / Twitter</span><span>TikTok</span><span>Vimeo</span><span data-fr="des milliers de sites via yt-dlp" data-en="thousands of sites via yt-dlp">des milliers de sites via yt-dlp</span>
+        <span>YouTube</span><span>Playlists</span><span>Instagram</span><span>X / Twitter</span><span>TikTok</span><span>Vimeo</span><span data-fr="des milliers de sites via yt-dlp" data-en="thousands of sites via yt-dlp">des milliers de sites via yt-dlp</span>
+      </div>
+    </div>
+
+    <section class="band" id="parcours">
+      <div class="band-head">
+        <p class="eyebrow"><span data-fr="Le parcours en trois gestes" data-en="The flow in three moves">Le parcours en trois gestes</span></p>
+        <h2 data-fr="Un lien, un fichier, l’extrait qui compte." data-en="One link, one file, the clip that matters.">Un lien, un fichier, l’extrait qui compte.</h2>
+        <p class="lede" data-fr="Pas de tableau de bord à configurer : l’app enchaîne les trois étapes et reste hors du chemin." data-en="No dashboard to set up: the app runs the three steps and stays out of the way.">Pas de tableau de bord à configurer : l’app enchaîne les trois étapes et reste hors du chemin.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <header><span class="dot" aria-hidden="true"></span><h3 data-fr="Coller" data-en="Paste">Coller</h3><p class="card-sub" data-fr="Le lien ne reste que le début." data-en="The link is only the start.">Le lien ne reste que le début.</p></header>
+          <ol class="steps">
+            <li><span data-fr="Collez l’adresse d’une vidéo ou d’une playlist ; le presse-papiers est détecté automatiquement." data-en="Paste a video or playlist address; the clipboard is detected automatically.">Collez l’adresse d’une vidéo ou d’une playlist ; le presse-papiers est détecté automatiquement.</span></li>
+            <li><span data-fr="yt-dlp télécharge et assemble un MP4 (H.264/AAC) via ffmpeg." data-en="yt-dlp downloads and assembles an MP4 (H.264/AAC) through ffmpeg.">yt-dlp télécharge et assemble un MP4 (H.264/AAC) via ffmpeg.</span></li>
+            <li><span data-fr="Selon le site, l’app utilise la session de votre navigateur connecté." data-en="Depending on the site, the app uses your signed-in browser session.">Selon le site, l’app utilise la session de votre navigateur connecté.</span></li>
+          </ol>
+          <p class="pills"><span class="pill">YouTube</span><span class="pill">Playlists</span><span class="pill">Instagram</span><span class="pill">X</span><span class="pill">TikTok</span></p>
+        </article>
+        <article class="card">
+          <header><span class="dot green" aria-hidden="true"></span><h3 data-fr="Garder" data-en="Keep">Garder</h3><p class="card-sub" data-fr="Tout reste sur votre disque." data-en="Everything stays on your disk.">Tout reste sur votre disque.</p></header>
+          <ol class="steps">
+            <li><span data-fr="Le fichier arrive dans votre dossier de téléchargement, prêt à l’emploi." data-en="The file lands in your download folder, ready to use.">Le fichier arrive dans votre dossier de téléchargement, prêt à l’emploi.</span></li>
+            <li><span data-fr="L’historique garde vignettes et actions rapides : copier, révéler, découper." data-en="History keeps thumbnails and quick actions: copy, reveal, trim.">L’historique garde vignettes et actions rapides : copier, révéler, découper.</span></li>
+            <li><span data-fr="Le raccourci global ⌘⇧6 rappelle l’app depuis n’importe quelle application." data-en="The ⌘⇧6 global shortcut brings the app back from anywhere.">Le raccourci global ⌘⇧6 rappelle l’app depuis n’importe quelle application.</span></li>
+          </ol>
+          <p class="pills"><span class="pill">⌘⇧6</span><span class="pill" data-fr="Historique" data-en="History">Historique</span><span class="pill" data-fr="Auto-copie" data-en="Auto-copy">Auto-copie</span></p>
+        </article>
+        <article class="card">
+          <header><span class="dot purple" aria-hidden="true"></span><h3 data-fr="Découper" data-en="Trim">Découper</h3><p class="card-sub" data-fr="Ne gardez que le passage utile." data-en="Keep only the useful part.">Ne gardez que le passage utile.</p></header>
+          <ol class="steps">
+            <li><span data-fr="Ouvrez la découpe depuis l’historique ou avec ⌘↩." data-en="Open the trim editor from history or with ⌘↩.">Ouvrez la découpe depuis l’historique ou avec ⌘↩.</span></li>
+            <li><span data-fr="Déplacez début et fin sur la frise de l’éditeur natif." data-en="Move start and end on the native editor timeline.">Déplacez début et fin sur la frise de l’éditeur natif.</span></li>
+            <li><span data-fr="Sauvegardez l’extrait ou copiez-le pour le coller ailleurs." data-en="Save the clip or copy it to paste anywhere.">Sauvegardez l’extrait ou copiez-le pour le coller ailleurs.</span></li>
+          </ol>
+          <p class="pills"><span class="pill">ffmpeg</span><span class="pill" data-fr="Extrait local" data-en="Local clip">Extrait local</span><span class="pill">⌘↩</span></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="band split" id="app">
+      <div class="split-copy">
+        <p class="eyebrow"><span data-fr="Dans l’app" data-en="In the app">Dans l’app</span></p>
+        <h2 data-fr="Pensée pour retrouver." data-en="Built to find it again.">Pensée pour retrouver.</h2>
+        <p class="lede" data-fr="Télécharger n’est que la moitié du travail. L’app garde une trace de chaque fichier et laisse le moteur yt-dlp se mettre à jour sans réinstaller." data-en="Downloading is only half the job. The app tracks every file and lets the yt-dlp engine update without reinstalling.">Télécharger n’est que la moitié du travail. L’app garde une trace de chaque fichier et laisse le moteur yt-dlp se mettre à jour sans réinstaller.</p>
+        <dl class="facts">
+          <div><dt>⌘⇧6</dt><dd data-fr="Raccourci global, accessible depuis toutes les apps." data-en="Global shortcut, available from every app.">Raccourci global, accessible depuis toutes les apps.</dd></div>
+          <div><dt>pkmd</dt><dd data-fr="CLI incluse : télécharger, lister l’historique, mettre à jour le moteur." data-en="Bundled CLI: download, list history, update the engine.">CLI incluse : télécharger, lister l’historique, mettre à jour le moteur.</dd></div>
+          <div><dt>yt-dlp</dt><dd data-fr="Milleux de sites pris en charge, moteur embarqué et mis à jour depuis l’app." data-en="Thousands of supported sites, engine bundled and updatable from the app.">Des milliers de sites pris en charge, moteur embarqué et mis à jour depuis l’app.</dd></div>
+          <div><dt>cobalt</dt><dd data-fr="Si un site résiste, Cobalt reste un lien externe de secours — aucune URL n’est envoyée automatiquement." data-en="If a site resists, Cobalt remains an external fallback link — no URL is ever sent automatically.">Si un site résiste, Cobalt reste un lien externe de secours — aucune URL n’est envoyée automatiquement.</dd></div>
+        </dl>
+      </div>
+      <figure class="split-visual">
+        <div class="framed green"><img class="settings-shot" src="assets/settings.png" width="1040" height="1096" loading="lazy" alt="Réglages natifs sombres : dossier de téléchargement, auto-copie, cookies et raccourcis, valeurs fictives" data-fr-alt="Réglages natifs sombres : dossier de téléchargement, auto-copie, cookies et raccourcis, valeurs fictives" data-en-alt="Native dark settings: download folder, auto-copy, cookies and shortcuts, fictional values"></div>
+        <figcaption data-fr="Capture native des réglages, préférences fictives." data-en="Native settings capture, fictional preferences.">Capture native des réglages, préférences fictives.</figcaption>
+      </figure>
+    </section>
+
+    <section class="band" id="install">
+      <div class="band-head">
+        <p class="eyebrow"><span data-fr="Installation" data-en="Install">Installation</span></p>
+        <h2 data-fr="Deux façons d’installer." data-en="Two ways to install.">Deux façons d’installer.</h2>
+        <p class="lede" data-fr="Le cask Homebrew installe aussi yt-dlp et ffmpeg. Avec le DMG seul, faites brew install yt-dlp ffmpeg." data-en="The Homebrew cask also installs yt-dlp and ffmpeg. With the DMG alone, run brew install yt-dlp ffmpeg.">Le cask Homebrew installe aussi yt-dlp et ffmpeg. Avec le DMG seul, faites brew install yt-dlp ffmpeg.</p>
+      </div>
+      <div class="install-grid">
+        <div class="install-card">
+          <p class="install-label">01 · Homebrew</p>
+          <div class="command"><code id="brew-command">brew install --cask mondary/tap/pkmedia-downloader</code><button type="button" id="copy-brew" data-fr="Copier" data-en="Copy" aria-label="Copier la commande Homebrew" data-fr-aria-label="Copier la commande Homebrew" data-en-aria-label="Copy Homebrew command">Copier</button></div>
+          <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
+          <p class="install-note" data-fr="Installe l’app, yt-dlp et ffmpeg, avec mise à jour via brew upgrade." data-en="Installs the app, yt-dlp and ffmpeg, upgradable via brew upgrade.">Installe l’app, yt-dlp et ffmpeg, avec mise à jour via brew upgrade.</p>
+        </div>
+        <div class="install-card">
+          <p class="install-label">02 · DMG</p>
+          <a class="btn dark wide" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg"><span>PKMediaDownloader · v1.2026.12</span><span aria-hidden="true">↗</span></a>
+          <p class="install-note" data-fr="Apple Silicon · macOS 14+ — glisser l’app dans Applications." data-en="Apple Silicon · macOS 14+ — drag the app to Applications.">Apple Silicon · macOS 14+ — glisser l’app dans Applications.</p>
+          <p class="install-warn" data-fr="Signé ad hoc, non notarisé : au premier lancement, macOS peut demander une autorisation dans Réglages système → Confidentialité et sécurité." data-en="Ad-hoc signed, not notarized: on first launch, macOS may require approval in System Settings → Privacy &amp; Security.">Signé ad hoc, non notarisé : au premier lancement, macOS peut demander une autorisation dans Réglages système → Confidentialité et sécurité.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="final">
+      <p class="eyebrow center"><span>PK / MACOS / 2026</span></p>
+      <h2 data-fr="Gardez ce qui compte." data-en="Keep what matters.">Gardez ce qui compte.</h2>
+      <p class="lede" data-fr="Un lien colle, un fichier atterrit sur votre Mac, l’extrait reste. Mis à jour via Homebrew ou GitHub." data-en="Paste a link, a file lands on your Mac, the clip stays. Updated via Homebrew or GitHub.">Un lien colle, un fichier atterrit sur votre Mac, l’extrait reste. Mis à jour via Homebrew ou GitHub.</p>
+      <div class="hero-actions center">
+        <a class="btn dark" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg"><span data-fr="Télécharger le DMG" data-en="Download the DMG">Télécharger le DMG</span><span aria-hidden="true">↗</span></a>
+        <a class="btn" href="https://github.com/mondary/media-downloader" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+        <a class="kofi-button kofi-bottom" href="https://ko-fi.com/pouark" target="_blank" rel="noopener noreferrer"><img src="assets/kofi-logomark.png" width="29" height="24" alt=""><span data-fr="Soutenir le projet sur Ko-fi" data-en="Support the project on Ko-fi">Soutenir le projet sur Ko-fi</span><span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-col">
+      <a class="brand" href="#top"><img src="assets/icon.png" width="20" height="20" alt=""><span>PKMediaDownloader</span></a>
+      <p data-fr="Fork maintenu de pixel-point/media-downloader." data-en="Maintained fork of pixel-point/media-downloader.">Fork maintenu de pixel-point/media-downloader.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-title" data-fr="Projet" data-en="Project">Projet</p>
+      <a href="https://github.com/mondary/media-downloader">GitHub ↗</a>
+      <a href="https://github.com/pixel-point/media-downloader" data-fr="Projet original ↗" data-en="Original project ↗">Projet original ↗</a>
+      <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp ↗</a>
+    </div>
+    <div class="footer-col">
+      <p class="footer-title" data-fr="Installer" data-en="Install">Installer</p>
+      <a href="#install">Homebrew</a>
+      <a href="https://github.com/mondary/media-downloader/releases/tag/v1.2026.12" data-fr="Release v1.2026.12" data-en="Release v1.2026.12">Release v1.2026.12</a>
+    </div>
+    <div class="footer-col">
+      <p class="footer-title" data-fr="Soutien" data-en="Support">Soutien</p>
+      <a href="https://ko-fi.com/pouark">Ko-fi ↗</a>
+      <a href="https://cobalt.tools/" target="_blank" rel="noopener noreferrer">Cobalt ↗</a>
+    </div>
+    <p class="footer-line">© 2026 PK · <span data-fr="Capture et découpe restent locales ; vérifiez les droits des contenus que vous téléchargez." data-en="Capture and trim stay local; check the rights of what you download.">Capture et découpe restent locales ; vérifiez les droits des contenus que vous téléchargez.</span></p>
+  </footer>
+  <script src="site.js" defer></script>
+</body>
+</html>

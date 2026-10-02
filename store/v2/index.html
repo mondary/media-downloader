@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f0e8">
+  <title>PKMediaDownloader — un lien, un fichier, à vous.</title>
+  <meta name="description" content="Téléchargez avec yt-dlp, retrouvez vos vidéos et découpez un extrait dans une app macOS native.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PKMediaDownloader — un lien, un fichier, à vous.">
+  <meta property="og:description" content="Téléchargez avec yt-dlp, retrouvez vos vidéos et découpez un extrait dans une app macOS native.">
+  <meta property="og:image" content="assets/social-card.png">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (() => {
+      let saved;
+      try { saved = localStorage.getItem('pkmd-v2-language'); } catch (_) {}
+      const preferences = navigator.languages?.length ? navigator.languages : [navigator.language];
+      const language = saved === 'fr' || saved === 'en' ? saved :
+        (preferences.map(value => (value || '').toLowerCase().split('-')[0])
+          .find(value => value === 'fr' || value === 'en') || 'fr');
+      document.documentElement.lang = language;
+      if (language === 'en') document.documentElement.classList.add('i18n-pending');
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main" data-fr="Aller au contenu" data-en="Skip to content">Aller au contenu</a>
+  <header class="masthead">
+    <a href="#top" class="wordmark" aria-label="PKMediaDownloader — accueil" data-fr-aria-label="PKMediaDownloader — accueil" data-en-aria-label="PKMediaDownloader — home">
+      <img src="assets/icon.png" alt="" width="36" height="36"><span>PK<span class="wordmark-light">MEDIA</span>DOWNLOADER</span>
+    </a>
+    <span class="edition" aria-hidden="true">MAC / 01 — 2026</span>
+    <nav aria-label="Navigation principale" data-fr-aria-label="Navigation principale" data-en-aria-label="Main navigation">
+      <a href="#how" data-fr="Le parcours" data-en="The flow">Le parcours</a>
+      <a href="#install" data-fr="Installer" data-en="Install">Installer</a>
+    </nav>
+    <div class="language" role="group" aria-label="Langue / Language">
+      <button type="button" data-language="fr" aria-pressed="true">FR</button>
+      <button type="button" data-language="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="record-dot" aria-hidden="true"></span><span data-fr="LE STUDIO VIDÉO DE VOTRE MAC" data-en="YOUR MAC'S VIDEO STUDIO">LE STUDIO VIDÉO DE VOTRE MAC</span></p>
+        <h1 id="hero-title"><span data-fr="UN LIEN." data-en="ONE LINK.">UN LIEN.</span><span data-fr="UN FICHIER." data-en="ONE FILE.">UN FICHIER.</span><em data-fr="À VOUS." data-en="YOURS.">À VOUS.</em></h1>
+        <p class="intro" data-fr="Collez l’adresse d’une vidéo. PKMediaDownloader la télécharge, la garde dans votre historique et vous laisse en découper l’essentiel." data-en="Paste a video link. PKMediaDownloader downloads it, keeps it in your history and lets you trim the part you need.">Collez l’adresse d’une vidéo. PKMediaDownloader la télécharge, la garde dans votre historique et vous laisse en découper l’essentiel.</p>
+        <div class="hero-actions">
+          <a class="primary-action" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg"><span data-fr="Télécharger le DMG" data-en="Download the DMG">Télécharger le DMG</span><span aria-hidden="true">↗</span></a>
+          <a class="text-action" href="#install" data-fr="Ou installer avec Homebrew ↓" data-en="Or install with Homebrew ↓">Ou installer avec Homebrew ↓</a>
+        </div>
+        <p class="hero-meta" data-fr="macOS 14+ / Apple Silicon / v1.2026.12" data-en="macOS 14+ / Apple Silicon / v1.2026.12">macOS 14+ / Apple Silicon / v1.2026.12</p>
+      </div>
+      <div class="hero-stage" aria-label="Aperçu de l’application" data-fr-aria-label="Aperçu de l’application" data-en-aria-label="App preview">
+        <div class="stage-top" aria-hidden="true"><span>PK / FRAME 001</span><span>1920 × 1080 · MP4</span></div>
+        <div class="stage-window"><img src="assets/app-history.png" width="1880" height="900" alt="Fenêtre native montrant trois téléchargements fictifs dans l’historique" data-fr-alt="Fenêtre native montrant trois téléchargements fictifs dans l’historique" data-en-alt="Native app window showing three fictional downloads in history" fetchpriority="high"></div>
+        <div class="stage-bottom" aria-hidden="true"><span>00:00:01:12</span><span class="stage-track"><i></i></span><span>● REC / LOCAL</span></div>
+      </div>
+    </section>
+
+    <div class="transport" aria-hidden="true"><span>PASTE</span><b>→</b><span>DOWNLOAD</span><b>→</b><span>KEEP</span><b>→</b><span>TRIM</span><b>→</b><span>PASTE</span><b>→</b><span>DOWNLOAD</span></div>
+
+    <section class="flow section-shell" id="how" aria-labelledby="flow-title">
+      <div class="section-heading"><p class="index">01 / 03 — <span data-fr="LE PARCOURS" data-en="THE FLOW">LE PARCOURS</span></p><h2 id="flow-title" data-fr="Du lien à l’extrait." data-en="From link to clip.">Du lien à l’extrait.</h2><p class="section-aside" data-fr="Trois gestes. Aucun faux tableau de bord." data-en="Three moves. No extra dashboard.">Trois gestes. Aucun faux tableau de bord.</p></div>
+      <div class="flow-grid">
+        <article><span class="step-number">01 / URL</span><h3 data-fr="COLLER" data-en="PASTE">COLLER</h3><p data-fr="Une vidéo ou une playlist YouTube. yt-dlp prend en charge de nombreux autres sites." data-en="A video or YouTube playlist. yt-dlp supports many more sites.">Une vidéo ou une playlist YouTube. yt-dlp prend en charge de nombreux autres sites.</p><span class="step-glyph" aria-hidden="true">↳</span></article>
+        <article><span class="step-number">02 / MP4</span><h3 data-fr="GARDER" data-en="KEEP">GARDER</h3><p data-fr="Suivez la progression, puis retrouvez chaque fichier dans l’historique de l’app." data-en="Follow the progress, then find every file in the app's history.">Suivez la progression, puis retrouvez chaque fichier dans l’historique de l’app.</p><span class="step-glyph" aria-hidden="true">↓</span></article>
+        <article><span class="step-number">03 / CLIP</span><h3 data-fr="DÉCOUPER" data-en="TRIM">DÉCOUPER</h3><p data-fr="Gardez un extrait, enregistrez-le ou copiez-le pour le partager." data-en="Keep a clip, save it or copy it to share.">Gardez un extrait, enregistrez-le ou copiez-le pour le partager.</p><span class="step-glyph" aria-hidden="true">↗</span></article>
+      </div>
+    </section>
+
+    <section class="proof section-shell" aria-labelledby="proof-title">
+      <div class="proof-copy"><p class="index">02 / 03 — <span data-fr="DANS L’APP" data-en="INSIDE THE APP">DANS L’APP</span></p><h2 id="proof-title" data-fr="Un espace pour retrouver. Pas juste télécharger." data-en="A place to find it again. Not just download.">Un espace pour retrouver. Pas juste télécharger.</h2><p data-fr="L’historique rassemble vos fichiers. Le raccourci global ⌘⇧6 rappelle l’app de partout. Les réglages vous laissent choisir le navigateur connecté pour les sites qui demandent une session." data-en="History keeps your files together. The ⌘⇧6 global shortcut brings the app back from anywhere. Settings let you choose your signed-in browser for sites that require a session.">L’historique rassemble vos fichiers. Le raccourci global ⌘⇧6 rappelle l’app de partout. Les réglages vous laissent choisir le navigateur connecté pour les sites qui demandent une session.</p><p class="caption" data-fr="Captures des vues SwiftUI réelles, avec données fictives." data-en="Real SwiftUI views captured with fictional data.">Captures des vues SwiftUI réelles, avec données fictives.</p></div>
+      <figure class="settings-frame"><img src="assets/settings.png" width="1040" height="1096" loading="lazy" alt="Réglages de PKMediaDownloader avec préférences fictives" data-fr-alt="Réglages de PKMediaDownloader avec préférences fictives" data-en-alt="PKMediaDownloader settings with fictional preferences"><figcaption>FRAME 002 / SETTINGS / MACOS</figcaption></figure>
+    </section>
+
+    <section class="fallback section-shell" aria-labelledby="fallback-title"><div><p class="index">↗ / <span data-fr="PLAN B" data-en="PLAN B">PLAN B</span></p><h2 id="fallback-title" data-fr="Un site résiste ?" data-en="A site won't cooperate?">Un site résiste ?</h2></div><div><p data-fr="Essayez Cobalt dans votre navigateur. C’est un service externe : PKMediaDownloader ne lui envoie jamais votre lien automatiquement." data-en="Try Cobalt in your browser. It's an external service: PKMediaDownloader never sends your link to it automatically.">Essayez Cobalt dans votre navigateur. C’est un service externe : PKMediaDownloader ne lui envoie jamais votre lien automatiquement.</p><div class="fallback-links"><a href="https://cobalt.tools/" target="_blank" rel="noopener noreferrer">cobalt.tools ↗</a><a href="https://github.com/imputnet/cobalt" target="_blank" rel="noopener noreferrer">GitHub / cobalt ↗</a></div></div></section>
+
+    <section class="install section-shell" id="install" aria-labelledby="install-title"><div class="install-head"><p class="index">03 / 03 — <span data-fr="INSTALLER" data-en="INSTALL">INSTALLER</span></p><h2 id="install-title" data-fr="À vous de jouer." data-en="Make it yours.">À vous de jouer.</h2><p data-fr="DMG direct ou Homebrew. Le cask installe aussi yt-dlp et ffmpeg ; avec le DMG seul, installez-les séparément." data-en="Direct DMG or Homebrew. The cask also installs yt-dlp and ffmpeg; with the DMG alone, install them separately.">DMG direct ou Homebrew. Le cask installe aussi yt-dlp et ffmpeg ; avec le DMG seul, installez-les séparément.</p></div><div class="install-options"><div class="install-option"><span class="option-label">A / HOMEBREW</span><div class="command-line"><code id="brew-command">brew install --cask mondary/tap/pkmedia-downloader</code><button type="button" id="copy-brew" data-fr-aria-label="Copier la commande Homebrew" data-en-aria-label="Copy Homebrew command" aria-label="Copier la commande Homebrew"><span data-fr="Copier" data-en="Copy">Copier</span></button></div><p class="copy-status" id="copy-status" role="status" aria-live="polite"></p></div><div class="install-option"><span class="option-label">B / DISK IMAGE</span><a class="download-row" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg"><span>PKMediaDownloader<br><small>v1.2026.12 · ARM64 · DMG</small></span><span aria-hidden="true">↗</span></a><details><summary data-fr="Commande curl" data-en="curl command">Commande curl</summary><code class="curl-command">curl -fL -o PKMediaDownloader-v1.2026.12-macos-arm64.dmg https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg</code></details></div></div><p class="install-note" data-fr="Signé ad hoc, non notarisé. Au premier lancement, macOS peut demander une autorisation dans Réglages système → Confidentialité et sécurité. macOS 14+ · Apple Silicon uniquement." data-en="Ad-hoc signed, not notarized. On first launch, macOS may require approval in System Settings → Privacy & Security. macOS 14+ · Apple Silicon only.">Signé ad hoc, non notarisé. Au premier lancement, macOS peut demander une autorisation dans Réglages système → Confidentialité et sécurité. macOS 14+ · Apple Silicon uniquement.</p></section>
+  </main>
+
+  <footer class="footer"><div class="footer-mark">PK<span>MEDIA</span>DOWNLOADER<small>© 2026 / MACOS</small></div><div class="footer-links"><a href="https://github.com/mondary/media-downloader">GitHub ↗</a><a href="https://github.com/pixel-point/media-downloader" data-fr="Projet original ↗" data-en="Original project ↗">Projet original ↗</a><a href="https://ko-fi.com/pouark" data-fr="Soutenir sur Ko-fi ↗" data-en="Support on Ko-fi ↗">Soutenir sur Ko-fi ↗</a></div><a class="back-top" href="#top" data-fr="Retour en haut ↑" data-en="Back to top ↑">Retour en haut ↑</a></footer>
+  <script>
+    (() => {
+      const meta = {
+        fr: {title:'PKMediaDownloader — un lien, un fichier, à vous.', description:'Téléchargez avec yt-dlp, retrouvez vos vidéos et découpez un extrait dans une app macOS native.'},
+        en: {title:'PKMediaDownloader — one link, one file, yours.', description:'Download with yt-dlp, find your videos and trim a clip in a native macOS app.'}
+      };
+      function apply(lang, remember) {
+        document.querySelectorAll('[data-fr]').forEach(el => { el.textContent = el.dataset[lang]; });
+        document.querySelectorAll('[data-fr-alt]').forEach(el => { el.alt = el.dataset[lang + 'Alt']; });
+        document.querySelectorAll('[data-fr-aria-label]').forEach(el => { el.setAttribute('aria-label', el.dataset[lang + 'AriaLabel']); });
+        document.querySelectorAll('[data-language]').forEach(el => { el.setAttribute('aria-pressed', String(el.dataset.language === lang)); });
+        document.title = meta[lang].title;
+        document.querySelector('meta[name="description"]').content = meta[lang].description;
+        document.querySelector('meta[property="og:title"]').content = meta[lang].title;
+        document.querySelector('meta[property="og:description"]').content = meta[lang].description;
+        const status = document.getElementById('copy-status');
+        if (status.dataset.state === 'copied') status.textContent = lang === 'en' ? 'Command copied.' : 'Commande copiée.';
+        if (status.dataset.state === 'failed') status.textContent = lang === 'en' ? 'Select the command above to copy it.' : 'Sélectionnez la commande ci-dessus pour la copier.';
+        document.documentElement.lang = lang;
+        document.documentElement.classList.remove('i18n-pending');
+        if (remember) { try { localStorage.setItem('pkmd-v2-language', lang); } catch (_) {} }
+      }
+      apply(document.documentElement.lang === 'en' ? 'en' : 'fr', false);
+      document.querySelectorAll('[data-language]').forEach(el => el.addEventListener('click', () => apply(el.dataset.language, true)));
+      document.getElementById('copy-brew').addEventListener('click', async () => {
+        const text = document.getElementById('brew-command').textContent;
+        let copied = false;
+        try { await navigator.clipboard.writeText(text); copied = true; } catch (_) {}
+        if (!copied) {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(document.getElementById('brew-command'));
+          selection.removeAllRanges(); selection.addRange(range);
+          try { copied = document.execCommand('copy'); } catch (_) {}
+          selection.removeAllRanges();
+        }
+        const status = document.getElementById('copy-status');
+        status.dataset.state = copied ? 'copied' : 'failed';
+        status.textContent = copied ? (document.documentElement.lang === 'en' ? 'Command copied.' : 'Commande copiée.') : (document.documentElement.lang === 'en' ? 'Select the command above to copy it.' : 'Sélectionnez la commande ci-dessus pour la copier.');
+      });
+    })();
+  </script>
+</body>
+</html>

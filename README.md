@@ -1,15 +1,15 @@
 # PKMediaDownloader
 
-![PKMediaDownloader — aperçu de l'application](store/assets/banner-1544x500.png)
+![PKMediaDownloader — aperçu de l'application](store/website/assets/banner-1544x500.png)
 
 <img src="icon.png" alt="Icône de PKMediaDownloader" width="64">
 
-![Historique de l'application avec données fictives](store/screenshots/01-app-history.png)
-![Réglages de l'application avec préférences fictives](store/screenshots/02-settings.png)
+![Historique de l'application avec données fictives](store/website/screenshots/01-app-history.png)
+![Réglages de l'application avec préférences fictives](store/website/screenshots/02-settings.png)
 
 [🇫🇷 FR](README.md) · [🇬🇧 EN](README_en.md)
 
-📦 version **v1.2026.12** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 projet **v1.2026.21** · release installable **v1.2026.12** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Téléchargeur vidéo natif macOS basé sur yt-dlp — supporte YouTube (playlists), Instagram, X/Twitter, TikTok et des milliers d'autres sites.
 
@@ -114,7 +114,7 @@ Téléchargement en terminal :
 curl -fL -o PKMediaDownloader-v1.2026.12-macos-arm64.dmg https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg
 ```
 
-Voir la [page promo bilingue](store/index.html) et la [proposition de rangement](docs/REFACTORING.md). Les deux captures ci-dessus proviennent des vues natives avec des données fictives ; la vidéo historique montre seulement l'icône.
+Voir la [page promo bilingue courante](store/website/index.html) et les archives [v1](store/v1/), [v2](store/v2/) et [v3](store/v3/). `./script/website.sh` vérifie ses fichiers. Les captures natives utilisent des données fictives et les miniatures YouTube de trois films Blender Foundation ; la vidéo v1 montre seulement l'icône.
 
 ## 🔗 Liens
 

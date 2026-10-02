@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ecebe6">
+  <title>PKMediaDownloader — gardez ce qui compte.</title>
+  <meta name="description" content="Un lien, un fichier sur votre Mac, puis l’extrait qui compte. Découvrez PKMediaDownloader, téléchargeable en DMG ou avec Homebrew.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PKMediaDownloader — gardez ce qui compte.">
+  <meta property="og:description" content="Un lien, un fichier sur votre Mac, puis l’extrait qui compte.">
+  <meta property="og:image" content="assets/social-card.png">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="stylesheet" href="style.css">
+  <noscript><style>.workspace-stage{aspect-ratio:auto}.stage{position:relative;opacity:1;visibility:visible;transform:none;min-height:300px}.stage-history,.stage-trim{display:grid}.workspace-controls{display:none}</style></noscript>
+  <script>
+    (() => {
+      let saved;
+      try { saved = localStorage.getItem('pkmd-language'); } catch (_) {}
+      const choices = navigator.languages?.length ? navigator.languages : [navigator.language];
+      const language = saved === 'fr' || saved === 'en' ? saved :
+        (choices.map(value => (value || '').toLowerCase().split('-')[0]).find(value => value === 'fr' || value === 'en') || 'fr');
+      document.documentElement.lang = language;
+      if (language === 'en') document.documentElement.classList.add('i18n-pending');
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main" data-fr="Aller au contenu" data-en="Skip to content">Aller au contenu</a>
+  <header class="site-header" id="top">
+    <a class="identity" href="#top"><img src="assets/icon.png" width="28" height="28" alt=""><span>PKMediaDownloader</span></a>
+    <nav aria-label="Navigation" data-fr-aria-label="Navigation" data-en-aria-label="Navigation"><a href="#experience" data-fr="Explorer" data-en="Explore">Explorer</a><a href="#install" data-fr="Installer" data-en="Install">Installer</a></nav>
+    <div class="language" role="group" aria-label="Langue / Language"><button type="button" data-language="fr" aria-pressed="true">FR</button><span aria-hidden="true">/</span><button type="button" data-language="en" aria-pressed="false">EN</button></div>
+  </header>
+
+  <main id="main">
+    <section class="opening" aria-labelledby="title">
+      <div class="opening-top"><span class="kicker" data-fr="LE LIEN N’EST QUE LE DÉBUT · MACOS" data-en="THE LINK IS ONLY THE BEGINNING · MACOS">LE LIEN N’EST QUE LE DÉBUT · MACOS</span><span class="issue">01 — 03 <i aria-hidden="true"></i> PK / 2026</span></div>
+      <h1 id="title"><span data-fr="GARDEZ CE" data-en="KEEP WHAT">GARDEZ CE</span><span><span data-fr="QUI COMPTE" data-en="MATTERS">QUI COMPTE</span><span class="full-stop">.</span></span></h1>
+      <div class="opening-bottom"><div class="opening-lead"><p data-fr="Collez une adresse. Retrouvez la vidéo sur votre Mac. Découpez l’instant à garder." data-en="Paste a link. Find the video on your Mac. Trim the moment worth keeping.">Collez une adresse. Retrouvez la vidéo sur votre Mac. Découpez l’instant à garder.</p><div class="opening-actions"><a class="button-dark" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg"><span data-fr="Télécharger le DMG" data-en="Download the DMG">Télécharger le DMG</span><span aria-hidden="true">↗</span></a><a class="quiet-link" href="#install">Homebrew <span aria-hidden="true">↓</span></a></div></div><figure class="opening-preview"><img src="assets/app-history.png" width="1880" height="900" alt="Aperçu natif de l’historique avec données fictives" data-fr-alt="Aperçu natif de l’historique avec données fictives" data-en-alt="Native history preview with fictional data"><figcaption data-fr="LA VRAIE APP · DONNÉES FICTIVES" data-en="THE REAL APP · FICTIONAL DATA">LA VRAIE APP · DONNÉES FICTIVES</figcaption></figure></div>
+      <p class="release-line" data-fr="macOS 14+ · Apple Silicon · version installable 1.2026.12" data-en="macOS 14+ · Apple Silicon · installable version 1.2026.12">macOS 14+ · Apple Silicon · version installable 1.2026.12</p>
+    </section>
+
+    <section class="experience" id="experience" aria-labelledby="experience-title">
+      <div class="experience-heading"><span class="kicker" data-fr="UN PARCOURS, PAS UN ARGUMENTAIRE" data-en="A JOURNEY, NOT A FEATURE LIST">UN PARCOURS, PAS UN ARGUMENTAIRE</span><h2 id="experience-title" data-fr="DU LIEN À L’EXTRAIT" data-en="FROM LINK TO CLIP">DU LIEN À L’EXTRAIT</h2><p data-fr="Parcourez les trois temps de l’application." data-en="Explore the three moments of the app.">Parcourez les trois temps de l’application.</p></div>
+      <div class="sequence">
+        <div class="workspace" aria-label="Parcours illustré de l’application" data-fr-aria-label="Parcours illustré de l’application" data-en-aria-label="Illustrated app journey">
+          <div class="workspace-top"><span>PK / SESSION 001</span><span class="workspace-state" id="workspace-state">01 / LIEN</span></div>
+          <div class="workspace-stage" id="workspace-stage">
+            <div class="stage stage-link is-active" data-stage="0" aria-hidden="false">
+              <div class="source-card"><div class="source-top"><span class="source-icon" aria-hidden="true">↗</span><span data-fr="POINT DE DÉPART" data-en="STARTING POINT">POINT DE DÉPART</span></div><p data-fr="Une adresse, et c’est parti." data-en="One address, and you're off.">Une adresse, et c’est parti.</p><div class="sample-url"><span>https://example.invalid/video</span><span aria-hidden="true">↗</span></div><small data-fr="URL fictive · schéma explicatif, pas un champ de téléchargement" data-en="Fictional URL · explanatory diagram, not a download field">URL fictive · schéma explicatif, pas un champ de téléchargement</small></div>
+            </div>
+            <div class="stage stage-history" data-stage="1"><figure><img src="assets/app-history.png" width="1880" height="900" loading="lazy" alt="Vue native de l’historique avec trois entrées fictives" data-fr-alt="Vue native de l’historique avec trois entrées fictives" data-en-alt="Native history view with three fictional entries"><figcaption data-fr="VUE NATIVE · HISTORIQUE AVEC DONNÉES FICTIVES" data-en="NATIVE VIEW · HISTORY WITH FICTIONAL DATA">VUE NATIVE · HISTORIQUE AVEC DONNÉES FICTIVES</figcaption></figure></div>
+            <div class="stage stage-trim" data-stage="2"><div class="trim-demo"><div class="trim-head"><span data-fr="L’INSTANT À GARDER" data-en="THE MOMENT TO KEEP">L’INSTANT À GARDER</span><span class="trim-clock" id="trim-clock">00:04 — 00:13</span></div><div class="frames" aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span><span>07</span><span>08</span><span>09</span><span>10</span><span>11</span><span>12</span></div><div class="selection" id="selection" aria-hidden="true"><i></i><i></i></div><label for="trim-range" data-fr="Déplacer le repère de fin (illustration)" data-en="Move the end marker (illustration)">Déplacer le repère de fin (illustration)</label><input id="trim-range" type="range" min="7" max="18" value="13" aria-valuetext="13 secondes"><p data-fr="Cette frise explique la sélection d’un extrait. L’export se fait dans l’application, pas sur ce site." data-en="This timeline illustrates clip selection. Export happens in the app, not on this site.">Cette frise explique la sélection d’un extrait. L’export se fait dans l’application, pas sur ce site.</p></div></div>
+          </div>
+          <div class="workspace-controls"><span class="progress-rail" aria-hidden="true"><i id="progress-fill"></i></span><div class="step-buttons"><button type="button" id="previous" aria-label="Étape précédente" data-fr-aria-label="Étape précédente" data-en-aria-label="Previous step">←</button><span id="step-count" aria-live="polite">01 / 03</span><button type="button" id="next" aria-label="Étape suivante" data-fr-aria-label="Étape suivante" data-en-aria-label="Next step">→</button></div></div>
+        </div>
+        <div class="chapters">
+          <article class="chapter" id="chapter-0" data-index="0"><span class="chapter-number">01 / URL</span><h3 data-fr="COLLER." data-en="PASTE.">COLLER.</h3><p data-fr="Une vidéo ou une playlist YouTube. L’application s’appuie sur yt-dlp pour la télécharger ; selon le site, une session du navigateur peut être nécessaire." data-en="A video or YouTube playlist. The app uses yt-dlp to download it; some sites may require a browser session.">Une vidéo ou une playlist YouTube. L’application s’appuie sur yt-dlp pour la télécharger ; selon le site, une session du navigateur peut être nécessaire.</p></article>
+          <article class="chapter" id="chapter-1" data-index="1"><span class="chapter-number">02 / FICHIER</span><h3 data-fr="RETROUVER." data-en="FIND IT.">RETROUVER.</h3><p data-fr="Le fichier arrive sur votre Mac et reste accessible dans l’historique, avec ses actions de copie et de découpe. Ici, la vraie vue de l’app avec des données fictives." data-en="The file lands on your Mac and stays in history, with copy and trim actions. This is the real app view with fictional data.">Le fichier arrive sur votre Mac et reste accessible dans l’historique, avec ses actions de copie et de découpe. Ici, la vraie vue de l’app avec des données fictives.</p></article>
+          <article class="chapter" id="chapter-2" data-index="2"><span class="chapter-number">03 / EXTRAIT</span><h3 data-fr="DÉCOUPER." data-en="TRIM.">DÉCOUPER.</h3><p data-fr="Dans l’app, sélectionnez le passage utile, puis sauvegardez ou copiez l’extrait. La frise ci-contre est une explication interactive, pas une capture de l’éditeur." data-en="In the app, select the part you need, then save or copy the clip. The timeline here is an interactive explanation, not an editor screenshot.">Dans l’app, sélectionnez le passage utile, puis sauvegardez ou copiez l’extrait. La frise ci-contre est une explication interactive, pas une capture de l’éditeur.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="interlude" aria-labelledby="interlude-title"><span class="kicker">PK / MACOS</span><h2 id="interlude-title" data-fr="LE FICHIER RESTE CHEZ VOUS." data-en="THE FILE STAYS WITH YOU.">LE FICHIER RESTE CHEZ VOUS.</h2><div class="interlude-bottom"><p data-fr="Historique, réglages et raccourci global ⌘⇧6 : les détails d’une app native pour retrouver ce que vous avez téléchargé." data-en="History, settings and the ⌘⇧6 global shortcut: the details of a native app built to find what you downloaded.">Historique, réglages et raccourci global ⌘⇧6 : les détails d’une app native pour retrouver ce que vous avez téléchargé.</p><figure><img src="assets/settings.png" width="1040" height="1096" loading="lazy" alt="Réglages natifs avec préférences fictives" data-fr-alt="Réglages natifs avec préférences fictives" data-en-alt="Native settings with fictional preferences"><figcaption data-fr="CAPTURE NATIVE · PRÉFÉRENCES FICTIVES" data-en="NATIVE CAPTURE · FICTIONAL PREFERENCES">CAPTURE NATIVE · PRÉFÉRENCES FICTIVES</figcaption></figure></div></section>
+
+    <section class="install" id="install" aria-labelledby="install-title"><div class="install-intro"><span class="kicker">FIN / DÉBUT</span><h2 id="install-title" data-fr="À VOUS DE JOUER." data-en="YOUR TURN.">À VOUS DE JOUER.</h2><p data-fr="Deux chemins vers la même app. Homebrew installe aussi yt-dlp et ffmpeg ; avec le DMG seul, installez-les séparément." data-en="Two ways to the same app. Homebrew also installs yt-dlp and ffmpeg; with the DMG alone, install them separately.">Deux chemins vers la même app. Homebrew installe aussi yt-dlp et ffmpeg ; avec le DMG seul, installez-les séparément.</p></div><div class="install-grid"><div><span class="install-label">01 / HOMEBREW</span><div class="command"><code id="brew-command">brew install --cask mondary/tap/pkmedia-downloader</code><button type="button" id="copy-brew" aria-label="Copier la commande Homebrew" data-fr-aria-label="Copier la commande Homebrew" data-en-aria-label="Copy Homebrew command" data-fr="Copier" data-en="Copy">Copier</button></div><p id="copy-status" role="status" aria-live="polite"></p></div><div><span class="install-label">02 / DMG</span><a class="dmg-link" href="https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg">PKMediaDownloader · v1.2026.12 <span aria-hidden="true">↗</span></a><p data-fr="DMG Apple Silicon · macOS 14+" data-en="Apple Silicon DMG · macOS 14+">DMG Apple Silicon · macOS 14+</p></div></div><p class="signature" data-fr="Signé ad hoc, non notarisé. Au premier lancement, macOS peut demander une autorisation dans Réglages système → Confidentialité et sécurité." data-en="Ad-hoc signed, not notarized. On first launch, macOS may require approval in System Settings → Privacy &amp; Security.">Signé ad hoc, non notarisé. Au premier lancement, macOS peut demander une autorisation dans Réglages système → Confidentialité et sécurité.</p></section>
+    <section class="fallback"><span class="kicker" data-fr="SI UN SITE RÉSISTE" data-en="IF A SITE WON’T COOPERATE">SI UN SITE RÉSISTE</span><p data-fr="Cobalt est une solution externe à ouvrir vous-même. PKMediaDownloader ne lui transmet jamais votre URL automatiquement." data-en="Cobalt is an external fallback you open yourself. PKMediaDownloader never sends it your URL automatically.">Cobalt est une solution externe à ouvrir vous-même. PKMediaDownloader ne lui transmet jamais votre URL automatiquement.</p><div><a href="https://cobalt.tools/" target="_blank" rel="noopener noreferrer">cobalt.tools ↗</a><a href="https://github.com/imputnet/cobalt" target="_blank" rel="noopener noreferrer">GitHub / cobalt ↗</a></div></section>
+  </main>
+  <footer><a class="identity" href="#top"><img src="assets/icon.png" width="24" height="24" alt="">PKMediaDownloader</a><div><a href="https://github.com/mondary/media-downloader">GitHub ↗</a><a href="https://github.com/pixel-point/media-downloader" data-fr="Projet original ↗" data-en="Original project ↗">Projet original ↗</a><a href="https://ko-fi.com/pouark">Ko-fi ↗</a></div><small>© 2026 · PK</small></footer>
+  <script src="site.js" defer></script>
+</body>
+</html>
