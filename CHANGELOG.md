@@ -4,6 +4,17 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.12] - 2026-10-02
+
+### Added
+- Liens externes vers Cobalt et son dépôt comme solution de secours après un échec, dans les réglages et la documentation.
+- Landing promotionnelle bilingue et proposition de rangement du dépôt.
+- Deux captures de vues natives hors écran avec données fictives, bannière et card issues de la vraie interface.
+- DMG Apple Silicon signé ad hoc publié sur GitHub et cask Homebrew généré depuis cet asset avec SHA-256 vérifié.
+
+### Changed
+- Script de release unifié avec le packager et version lue dans ce changelog.
+
 ## [v1.2026.11] - 2026-09-30
 
 ### Changed

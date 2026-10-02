@@ -1,8 +1,15 @@
 # PKMediaDownloader
 
+![PKMediaDownloader — aperçu de l'application](store/assets/banner-1544x500.png)
+
+<img src="icon.png" alt="Icône de PKMediaDownloader" width="64">
+
+![Historique de l'application avec données fictives](store/screenshots/01-app-history.png)
+![Réglages de l'application avec préférences fictives](store/screenshots/02-settings.png)
+
 [🇫🇷 FR](README.md) · [🇬🇧 EN](README_en.md)
 
-📦 version **v1.2026.11** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 version **v1.2026.12** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Téléchargeur vidéo natif macOS basé sur yt-dlp — supporte YouTube (playlists), Instagram, X/Twitter, TikTok et des milliers d'autres sites.
 
@@ -18,6 +25,7 @@
 - **Raccourci clavier universel** — active l'app depuis n'importe où (Cmd+Shift+6)
 - **Icône menubar** — accès rapide
 - **Auto-paste** — les URLs du presse-papiers sont détectées automatiquement
+- **Cobalt en secours** — lien externe proposé après un échec de téléchargement, sans envoi automatique de l'URL
 
 ## 🧠 Utilisation
 
@@ -31,9 +39,9 @@
 Colle simplement une URL de playlist YouTube — l'app détecte automatiquement `list=` dans l'URL et télécharge toute la playlist.
 
 ### Social Media (Instagram, X, TikTok)
-1. Installe une extension navigateur "Get cookies.txt"
-2. Exporte les cookies pour le site souhaité
-3. Dans **Settings → Social Media Auth**, sélectionne le fichier cookies
+Choisis le navigateur connecté dans **Settings → Social Media Auth**. Si la lecture de sa session échoue, sélectionne un fichier `cookies.txt` exporté séparément.
+
+Si un site ne fonctionne pas avec yt-dlp, ouvre [Cobalt](https://cobalt.tools/) comme **solution externe de secours** ([code source](https://github.com/imputnet/cobalt)). L'app n'envoie jamais ton URL à Cobalt automatiquement ; consulte ses conditions et les droits sur le contenu avant de l'utiliser.
 
 ## ⚙️ Réglages
 
@@ -41,7 +49,7 @@ Colle simplement une URL de playlist YouTube — l'app détecte automatiquement 
 |---|---|
 | Dossier de téléchargement | Choisir où sauvegarder les vidéos |
 | Auto-copie | Copier automatiquement dans le presse-papiers |
-| Cookies | Fichier d'authentification pour les réseaux sociaux |
+| Cookies | Session du navigateur ou fichier `cookies.txt` facultatif |
 | Accessibilité | Nécessaire pour les raccourcis clavier globaux |
 | Raccourcis | Cmd+Shift+6 (activer), Return (copier), Cmd+Return (trim) |
 
@@ -87,28 +95,31 @@ swift run
 
 ## 🧾 Changelog
 
-- **v1.2026.11** : `pkmd` devient un binaire indépendant (package découpé en Core + 2 exécutables)
-- **v1.2026.10** : CLI `pkmd` embarqué (download, list, engines, update-engine)
-- **v1.2026.9** : Raccourci global par défaut corrigé en Cmd+Shift+6 (était 8)
-- **v1.2026.8** : Build GitHub Actions (tests + DMG/ZIP en artefact, sans certificat local)
-- **v1.2026.7** : « Check for Updates » vérifie le dépôt fork au lieu de l'amont
-- **v1.2026.6** : Mise à jour de yt-dlp depuis les réglages (version affichée + bouton)
-- **v1.2026.5** : `.gitignore` ignore le fichier `Icon?` parasite macOS
-- **v1.2026.4** : Dossier `store/` avec kit promotionnel (bannière, card, capture, démo)
-- **v1.2026.3** : Historique playlist item par item, panneau historique redimensionnable avec bouton « Vider »
-- **v1.2026.2** : Correction du lien GitHub dans les réglages (pointe vers le fork)
-- **v1.2026.1** : Fork de [pixel-point/media-downloader](https://github.com/pixel-point/media-downloader) avec :
-  - Support playlists YouTube
-  - Auth cookies pour Instagram/X/TikTok
-  - Icône menubar
-  - Auto-paste du presse-papiers
-  - Settings redesignés (SwiftUI)
-  - Liens vers le projet original
+Voir le [CHANGELOG.md](CHANGELOG.md) pour l'historique complet.
+
+## 📦 Installation
+
+**Homebrew** (macOS 14+, Apple Silicon) :
+
+```sh
+brew install --cask mondary/tap/pkmedia-downloader
+brew upgrade --cask mondary/tap/pkmedia-downloader
+```
+
+**DMG direct** : [PKMediaDownloader-v1.2026.12-macos-arm64.dmg](https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg) — ouvrir et glisser l'app dans Applications. Cette première release est signée **ad hoc**, non notarisée : macOS peut demander une autorisation manuelle dans Réglages système → Confidentialité et sécurité au premier lancement. `yt-dlp` et `ffmpeg` sont requis (installés par le cask ; pour le DMG seul : `brew install yt-dlp ffmpeg`).
+
+Téléchargement en terminal :
+
+```sh
+curl -fL -o PKMediaDownloader-v1.2026.12-macos-arm64.dmg https://github.com/mondary/media-downloader/releases/download/v1.2026.12/PKMediaDownloader-v1.2026.12-macos-arm64.dmg
+```
+
+Voir la [page promo bilingue](store/index.html) et la [proposition de rangement](docs/REFACTORING.md). Les deux captures ci-dessus proviennent des vues natives avec des données fictives ; la vidéo historique montre seulement l'icône.
 
 ## 🔗 Liens
 
 - Projet original : [pixel-point/media-downloader](https://github.com/pixel-point/media-downloader)
-- Fork : [PKMediaDownloader](https://github.com)
+- Fork : [PKMediaDownloader](https://github.com/mondary/media-downloader)
 - yt-dlp : [github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp)
 
 ---

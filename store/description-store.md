@@ -60,17 +60,20 @@ EN :
 
 | Fichier | Sujet |
 |---|---|
-| `01-apercu-projet.png` | Capture de présentation du projet (fichier `image.png` du dépôt) |
+| `01-apercu-projet.png` | Ancien visuel d'icône (identique à `image.png`), pas une capture de l'interface |
+| `01-app-history.png` | Fenêtre native avec historique fictif, capture hors écran |
+| `02-settings.png` | Réglages natifs avec préférences fictives, capture hors écran |
 
 ## Offre
 
-- **Modèle** : Open Source
+- **Modèle** : code source public (licence du fork à clarifier avant redistribution)
 - **Prix** : Gratuit
 
 ## Plateformes
 
-- GitHub Releases : —
+- GitHub Releases PK : https://github.com/mondary/media-downloader/releases/tag/v1.2026.12 (DMG Apple Silicon signé ad hoc, non notarisé).
 
 ## Liens
 
 - **Repo** : https://github.com/mondary/media-downloader
+- **Secours externe** : https://cobalt.tools/ — code source : https://github.com/imputnet/cobalt (aucune transmission automatique de lien)

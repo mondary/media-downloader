@@ -4,11 +4,12 @@ set -euo pipefail
 APP_NAME="PKMediaDownloader"
 BUNDLE_ID="${BUNDLE_ID:-com.pkmediadownloader.app}"
 MIN_SYSTEM_VERSION="14.0"
-APP_VERSION="${APP_VERSION:-v1.2026.11}"
-APP_BUILD="${APP_BUILD:-1}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
+APP_VERSION="${APP_VERSION:-$(sed -n 's/^## \[\(v[^]]*\)\].*/\1/p' CHANGELOG.md | head -1)}"
+[[ -n "$APP_VERSION" ]] || { echo 'error: no versioned CHANGELOG entry' >&2; exit 1; }
+APP_BUILD="${APP_BUILD:-$(printf '%s' "$APP_VERSION" | tr -cd '0-9')}"
 
 if [[ -f ".env" ]]; then
   set -a
@@ -70,7 +71,12 @@ NOTARY_ZIP="$RELEASE_DIR/$APP_NAME-notary.zip"
 RELEASE_ZIP="$RELEASE_DIR/$APP_NAME-$APP_VERSION-macos-$ARCH.zip"
 RELEASE_DMG="$RELEASE_DIR/$APP_NAME-$APP_VERSION-macos-$ARCH.dmg"
 
-swift test
+if [[ "${SKIP_TESTS:-0}" == "1" ]]; then
+  [[ "$SIGNED_MODE" == "false" ]] || fail "SKIP_TESTS is only allowed for an unsigned local preview"
+  printf '%s\n' 'warning: XCTest skipped for unsigned local preview' >&2
+else
+  swift test
+fi
 swift build -c release
 swift build -c release --product pkmd
 BUILD_BINARY="$(swift build -c release --show-bin-path)/$APP_NAME"
@@ -99,7 +105,7 @@ cat >"$INFO_PLIST" <<PLIST
   <key>CFBundleIconFile</key>
   <string>AppIcon</string>
   <key>CFBundleShortVersionString</key>
-  <string>$APP_VERSION</string>
+  <string>${APP_VERSION#v}</string>
   <key>CFBundleVersion</key>
   <string>$APP_BUILD</string>
   <key>CFBundlePackageType</key>

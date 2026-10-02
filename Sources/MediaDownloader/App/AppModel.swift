@@ -9,10 +9,11 @@ final class AppModel: ObservableObject {
     @Published private(set) var isDownloading = false
     @Published private(set) var activeDownload: DownloadProgress?
     @Published var statusMessage: String?
+    @Published private(set) var lastDownloadFailed = false
     @Published var activeTrimSession: ActiveTrimSession?
     @Published private(set) var isCheckingForUpdates = false
 
-    private let preferences = PreferencesStore()
+    private let preferences: PreferencesStore
     private let historyStore = HistoryStore()
     private let downloader = MediaDownloaderService()
     private let thumbnailGenerator = ThumbnailGenerator()
@@ -27,8 +28,9 @@ final class AppModel: ObservableObject {
         preferences.downloadFolder.path
     }
 
-    init() {
-        history = historyStore.load()
+    init(preferences: PreferencesStore = PreferencesStore(), previewHistory: [DownloadItem]? = nil) {
+        self.preferences = preferences
+        history = previewHistory ?? historyStore.load()
     }
 
     func chooseDownloadFolder() {
@@ -125,7 +127,7 @@ final class AppModel: ObservableObject {
             guard let self else { return }
 
             do {
-                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.11"
+                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.12"
                 let result = try await updateChecker.check(currentVersion: currentVersion)
                 let downloadedUpdate: DownloadedUpdate?
 
@@ -225,6 +227,7 @@ final class AppModel: ObservableObject {
             fractionCompleted: nil
         )
         statusMessage = "Downloading..."
+        lastDownloadFailed = false
         completedDownloadPaths.removeAll()
         NotificationCenter.default.post(name: .downloadStarted, object: nil)
         let model = self
@@ -266,6 +269,7 @@ final class AppModel: ObservableObject {
             generateThumbnailInBackground(for: item)
         } catch {
             statusMessage = error.localizedDescription
+            lastDownloadFailed = true
             NotificationCenter.default.post(name: .downloadFailed, object: nil, userInfo: ["error": error.localizedDescription])
         }
 

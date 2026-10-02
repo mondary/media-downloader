@@ -1,5 +1,7 @@
 .build/
 dist/
+graphify-out/
+store/website/
 .DS_Store
 Icon?
 *.xcuserdata

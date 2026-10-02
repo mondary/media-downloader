@@ -7,6 +7,12 @@ enum MediaDownloaderApp {
     private static var delegate: AppDelegate?
 
     static func main() {
+#if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--capture-promo") {
+            PromoCapture.run()
+            return
+        }
+#endif
         let app = NSApplication.shared
         let delegate = AppDelegate()
         Self.delegate = delegate

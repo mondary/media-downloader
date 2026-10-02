@@ -117,7 +117,7 @@ private struct SettingsRootView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("PKMediaDownloader")
                         .font(.title3.weight(.semibold))
-                                        Text("v1.2026.11 — Native macOS video downloader")
+                    Text("v1.2026.12 — Native macOS video downloader")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -388,6 +388,21 @@ private struct SettingsRootView: View {
                     Label("PKMediaDownloader (GitHub)", systemImage: "arrow.up.right.square")
                         .font(.subheadline)
                 }
+            }
+
+            Link(destination: URL(string: "https://cobalt.tools/")!) {
+                Label("Cobalt — browser fallback when a download fails", systemImage: "lifepreserver")
+                    .font(.subheadline)
+            }
+
+            Link(destination: URL(string: "https://github.com/imputnet/cobalt")!) {
+                Label("Cobalt — source code (GitHub)", systemImage: "arrow.up.right.square")
+                    .font(.subheadline)
+            }
+
+            Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
+                Label("Support on Ko-fi", systemImage: "heart")
+                    .font(.subheadline)
             }
         }
         .padding(14)

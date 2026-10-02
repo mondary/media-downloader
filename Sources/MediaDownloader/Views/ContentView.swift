@@ -45,6 +45,18 @@ struct ContentView: View {
                         .transition(.opacity.combined(with: .scale(scale: 0.985, anchor: .top)))
                 }
 
+                if model.lastDownloadFailed {
+                    HStack(spacing: 8) {
+                        Text("Download failed.")
+                        Link("Try Cobalt in your browser ↗", destination: URL(string: "https://cobalt.tools/")!)
+                        Text("External service; no URL is sent automatically.")
+                            .foregroundStyle(.secondary)
+                    }
+                    .font(.caption)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
                 if let session = displayedTrimSession {
                     VideoTrimPanelView(
                         session: session,
