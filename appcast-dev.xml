@@ -3,7 +3,16 @@
   <channel>
     <title>PKMediaDownloader (dev)</title>
     <link>https://raw.githubusercontent.com/mondary/media-downloader/main/appcast-dev.xml</link>
-    <description>Dev builds for PKMediaDownloader, published from main.</description>
+    <description>Latest Dev build for PKMediaDownloader.</description>
     <language>en</language>
+    <item>
+      <title>PKMediaDownloader 1.2026.25-dev.1748</title>
+      <pubDate>Wed, 07 Oct 2026 17:51:05 +0000</pubDate>
+      <sparkle:version>1791395337</sparkle:version>
+      <sparkle:shortVersionString>1.2026.25-dev.1748</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <description>Automatic Dev build from main. Installed silently for the Dev channel.</description>
+      <enclosure url="https://github.com/mondary/media-downloader/releases/download/dev/PKMediaDownloader-dev.zip" type="application/octet-stream" sparkle:edSignature="4pIcmWu17DgmZl1NXvcmuT39SaxiCldo5QWfyCj+9mtQl5UyKKXdMwcto877Z85mlINSH8s4Slut1zQHaIZoBQ==" length="5578493" />
+    </item>
   </channel>
 </rss>
