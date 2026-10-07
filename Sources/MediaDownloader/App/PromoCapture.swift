@@ -43,17 +43,25 @@ enum PromoCapture {
         capture(hosting, to: directory.appendingPathComponent("01-app-history.png"))
         window.orderOut(nil)
 
-        let settings = SettingsWindowController(preferences: PreferencesStore(defaults: defaults), onCheckForUpdates: {})
-        if let settingsWindow = settings.window, let content = settingsWindow.contentView {
-            settingsWindow.setFrameOrigin(NSPoint(x: -10000, y: -10000))
-            // Settings use a deliberately dark custom surface; match their
-            // production appearance so system labels keep their contrast.
-            settingsWindow.appearance = NSAppearance(named: .darkAqua)
-            settingsWindow.orderFront(nil)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.3))
-            content.layoutSubtreeIfNeeded()
-            capture(content, to: directory.appendingPathComponent("02-settings.png"))
-            settingsWindow.orderOut(nil)
+        for (appearance, suffix) in [(NSAppearance.Name.aqua, "light"), (.darkAqua, "dark")] {
+            for section in [MediaSettingsSection.general, .about, .support, .library] {
+                let settings = SettingsWindowController(
+                    preferences: PreferencesStore(defaults: defaults),
+                    initialSection: section,
+                    onCheckForUpdates: {}
+                )
+                if let settingsWindow = settings.window, let content = settingsWindow.contentView {
+                    settingsWindow.setFrameOrigin(NSPoint(x: -10000, y: -10000))
+                    settingsWindow.appearance = NSAppearance(named: appearance)
+                    settingsWindow.orderFront(nil)
+                    RunLoop.current.run(until: Date().addingTimeInterval(0.3))
+                    content.layoutSubtreeIfNeeded()
+                    let filename = section == .general && suffix == "dark"
+                        ? "02-settings.png" : "settings-\(section.rawValue)-\(suffix).png"
+                    capture(content, to: directory.appendingPathComponent(filename))
+                    settingsWindow.orderOut(nil)
+                }
+            }
         }
     }
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.2026.31] - 2026-10-07
+
+### Changed
+- Harmonisation du fond de la fenêtre Réglages, placement des mises à jour en panneau fixe dans À propos et alignement du logo Ko-fi dans la carte de soutien et le pied de page.
+
+
 Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).

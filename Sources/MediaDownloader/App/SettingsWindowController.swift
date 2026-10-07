@@ -7,7 +7,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     private let preferences: PreferencesStore
     private let onCheckForUpdates: () -> Void
 
-    init(preferences: PreferencesStore, onCheckForUpdates: @escaping () -> Void) {
+    init(preferences: PreferencesStore, initialSection: MediaSettingsSection = .general, onCheckForUpdates: @escaping () -> Void) {
         self.preferences = preferences
         self.onCheckForUpdates = onCheckForUpdates
 
@@ -23,7 +23,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
-        window.backgroundColor = NSColor(calibratedWhite: 0.11, alpha: 1)
+        window.backgroundColor = .windowBackgroundColor
         window.minSize = minimumSize
         window.maxSize = NSSize(width: 980, height: 900)
         window.collectionBehavior = [.moveToActiveSpace]
@@ -33,7 +33,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         window.delegate = self
         let hosting = NSHostingView(
-            rootView: SettingsRootView(preferences: preferences, onCheckForUpdates: onCheckForUpdates)
+            rootView: SettingsRootView(preferences: preferences, initialSection: initialSection, onCheckForUpdates: onCheckForUpdates)
                 .frame(minWidth: minimumSize.width, minHeight: minimumSize.height)
         )
         window.contentView = hosting
@@ -63,7 +63,7 @@ enum MediaSettingsLanguage: String, CaseIterable, Identifiable {
     func text(_ french: String, _ english: String) -> String { self == .fr ? french : english }
 }
 
-private enum MediaSettingsSection: String, CaseIterable, Identifiable {
+enum MediaSettingsSection: String, CaseIterable, Identifiable {
     case general, download, authentication, shortcuts, credits, library, support, about
     var id: String { rawValue }
     var group: String { self == .credits || self == .about || self == .support || self == .library ? "PK PROJECTS" : "APP" }
@@ -120,8 +120,9 @@ private struct SettingsRootView: View {
         }
     }
 
-    init(preferences: PreferencesStore, onCheckForUpdates: @escaping () -> Void) {
+    init(preferences: PreferencesStore, initialSection: MediaSettingsSection, onCheckForUpdates: @escaping () -> Void) {
         self.preferences = PreferencesStoreWrapper(preferences)
+        _selection = State(initialValue: initialSection)
         self.onCheckForUpdates = onCheckForUpdates
     }
 
@@ -129,8 +130,12 @@ private struct SettingsRootView: View {
         HStack(spacing: 0) {
             sidebar
             Divider()
-            selectedContent
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            VStack(spacing: 0) {
+                selectedContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                Divider()
+                settingsFooter
+            }
         }
         .frame(minWidth: 760, minHeight: 560)
         .background(Color(nsColor: .windowBackgroundColor))
@@ -285,68 +290,74 @@ private struct SettingsRootView: View {
     // MARK: - About and Updates
 
     private var aboutSection: some View {
-        ScrollView {
-            VStack(spacing: 18) {
-                VStack(spacing: 0) {
-                    Image(nsImage: NSApp.applicationIconImage)
-                        .resizable().interpolation(.high).frame(width: 88, height: 88)
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .padding(.top, 36).padding(.bottom, 16)
-                    Text("PKMediaDownloader").font(.system(size: 24, weight: .bold))
-                    Text(language.text("Version installée", "Installed version") + " \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"))")
-                        .font(.system(size: 13, weight: .medium, design: .monospaced))
-                        .foregroundStyle(.secondary).padding(.top, 4).help(language.text("Version installée", "Installed version"))
-                    Text(language.text("Par PK", "By PK"))
-                        .font(.system(size: 13)).foregroundStyle(.secondary).padding(.top, 2).padding(.bottom, 24)
-                    VStack(alignment: .leading, spacing: 14) {
-                        Text(language.text("Salut l’ami,", "Hey friend,")).italic().font(.system(size: 13))
-                        Text(language.text(
-                            "PKMediaDownloader est une application macOS native pour télécharger, découper et exporter des médias. Les traitements restent sur ce Mac.",
-                            "PKMediaDownloader is a native macOS app to download, trim and export media. Processing stays on this Mac."
-                        )).font(.system(size: 13)).foregroundStyle(.secondary)
-                        Text(language.text("Merci d’utiliser l’application.", "Thanks for using the app."))
-                            .font(.system(size: 13)).foregroundStyle(.secondary).padding(.top, 8)
-                        Text("— PK").font(.system(size: 13)).foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: 480, alignment: .leading)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 24)
-            .frame(maxWidth: 720).frame(maxWidth: .infinity)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            VStack(spacing: 0) {
-                Divider()
-                updatesCard
-                    .frame(maxWidth: 720)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                Divider()
-                HStack(spacing: 16) {
-                    Link(destination: URL(string: "https://github.com/mondary/media-downloader")!) {
-                        Label("GitHub", systemImage: "network")
-                    }
-                    Link(destination: URL(string: "https://github.com/mondary/media-downloader/issues")!) {
-                        Label("Issues", systemImage: "exclamationmark.bubble")
-                    }
-                    Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
-                        HStack(spacing: 4) {
-                            if let logo = bundledImage(named: "kofi-logo", in: "") {
-                                Image(nsImage: logo).resizable().frame(width: 12, height: 12)
-                            }
-                            Text(language.text("Soutenir sur Ko-fi", "Support on Ko-fi"))
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 18) {
+                    VStack(spacing: 0) {
+                        Image(nsImage: NSApp.applicationIconImage)
+                            .resizable().interpolation(.high).frame(width: 88, height: 88)
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .padding(.top, 36).padding(.bottom, 16)
+                        Text("PKMediaDownloader").font(.system(size: 24, weight: .bold))
+                        Text(language.text("Version installée", "Installed version") + " \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"))")
+                            .font(.system(size: 13, weight: .medium, design: .monospaced))
+                            .foregroundStyle(.secondary).padding(.top, 4).help(language.text("Version installée", "Installed version"))
+                        Text(language.text("Par PK", "By PK"))
+                            .font(.system(size: 13)).foregroundStyle(.secondary).padding(.top, 2).padding(.bottom, 24)
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text(language.text("Salut l’ami,", "Hey friend,")).italic().font(.system(size: 13))
+                            Text(language.text(
+                                "PKMediaDownloader est une application macOS native pour télécharger, découper et exporter des médias. Les traitements restent sur ce Mac.",
+                                "PKMediaDownloader is a native macOS app to download, trim and export media. Processing stays on this Mac."
+                            )).font(.system(size: 13)).foregroundStyle(.secondary)
+                            Text(language.text("Merci d’utiliser l’application.", "Thanks for using the app."))
+                                .font(.system(size: 13)).foregroundStyle(.secondary).padding(.top, 8)
+                            Text("— PK").font(.system(size: 13)).foregroundStyle(.secondary)
                         }
-                        .foregroundStyle(Color(red: 1, green: 0.37, blue: 0.36))
+                        .frame(maxWidth: 480, alignment: .leading)
                     }
-                    Spacer()
-                    Text("MIT · macOS 14+").foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity)
                 }
-                .font(.caption).padding(.horizontal, 24).padding(.vertical, 14)
+                .padding(.horizontal, 20).padding(.bottom, 32)
+                .frame(maxWidth: 720).frame(maxWidth: .infinity)
             }
-            .background(.regularMaterial)
+            Divider()
+            updatesCard
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
         }
+    }
+
+    private var settingsFooter: some View {
+        HStack(spacing: 16) {
+            Link(destination: URL(string: "https://github.com/mondary/media-downloader")!) {
+                Label("GitHub", systemImage: "network")
+            }
+            .foregroundStyle(.secondary)
+            Link(destination: URL(string: "https://github.com/mondary/media-downloader/issues")!) {
+                Label("Issues", systemImage: "exclamationmark.bubble")
+            }
+            .foregroundStyle(.secondary)
+            Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
+                HStack(spacing: 4) {
+                    kofiIcon.resizable().scaledToFit().frame(width: 12, height: 12)
+                    Text(language.text("Soutenir sur Ko-fi", "Support on Ko-fi"))
+                }
+                .foregroundStyle(Color(red: 1, green: 0.37, blue: 0.36))
+            }
+            Spacer(minLength: 8)
+            Text("MIT · macOS 14+").foregroundStyle(.tertiary)
+        }
+        .font(.caption)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 14)
+    }
+
+    private var kofiIcon: Image {
+        if let logo = bundledImage(named: "kofi-logo", in: "") {
+            return Image(nsImage: logo)
+        }
+        return Image(systemName: "cup.and.saucer.fill")
     }
 
     private struct CreditEntry: Identifiable {
@@ -479,8 +490,8 @@ private struct SettingsRootView: View {
             ))
             .font(.caption).foregroundStyle(.secondary)
         }
-        .padding(16)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.025)))
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.035)))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.primary.opacity(0.08), lineWidth: 1))
     }
 
@@ -756,14 +767,9 @@ private struct SettingsRootView: View {
                 .padding(.top, 36).padding(.bottom, 24)
                 VStack(spacing: 16) {
                     HStack(spacing: 12) {
-                        Group {
-                            if let logo = bundledImage(named: "kofi-logo", in: "") {
-                                Image(nsImage: logo).resizable().scaledToFit().frame(width: 34, height: 34)
-                            } else {
-                                Image(systemName: "cup.and.saucer.fill").font(.system(size: 20))
-                                    .foregroundStyle(Color(red: 1, green: 0.37, blue: 0.36)).frame(width: 36)
-                            }
-                        }
+                        kofiIcon.resizable().scaledToFit()
+                            .frame(width: 28, height: 28)
+                            .frame(width: 36)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Ko-fi").font(.system(size: 14, weight: .semibold))
                             Text(language.text("Offrir un café au développeur", "Support the developer with a coffee"))
@@ -771,14 +777,9 @@ private struct SettingsRootView: View {
                         }
                         Spacer()
                         Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
-                            HStack(spacing: 6) {
-                                if let logo = bundledImage(named: "kofi-logo", in: "") {
-                                    Image(nsImage: logo).resizable().scaledToFit().frame(width: 15, height: 15)
-                                }
-                                Text(language.text("Soutenir sur Ko-fi", "Support on Ko-fi"))
-                            }
-                            .font(.system(size: 13, weight: .medium)).foregroundStyle(.white)
-                            .padding(.horizontal, 16).padding(.vertical, 7)
+                            Text(language.text("Soutenir sur Ko-fi", "Support on Ko-fi"))
+                                .font(.system(size: 13, weight: .medium)).foregroundStyle(.white)
+                            .padding(.horizontal, 16).padding(.vertical, 6)
                             .background(Color(red: 1, green: 0.37, blue: 0.36), in: RoundedRectangle(cornerRadius: 8))
                         }
                         .buttonStyle(.plain)
@@ -985,10 +986,10 @@ private struct SettingsRootView: View {
 
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 10, style: .continuous)
-            .fill(Color.white.opacity(0.06))
+            .fill(Color(nsColor: .controlBackgroundColor))
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    .stroke(Color(nsColor: .separatorColor).opacity(0.5), lineWidth: 0.5)
             )
     }
 }
