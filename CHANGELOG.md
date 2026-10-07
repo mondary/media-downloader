@@ -4,6 +4,12 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.28] - 2026-10-07
+
+### Changed
+- Le panneau Mises à jour reste fixé au-dessus du pied de page pendant le défilement d’À propos.
+- La fenêtre Réglages est redimensionnable, avec une taille minimale adaptée au panneau fixe.
+
 ## [v1.2026.27] - 2026-10-07
 
 ### Changed

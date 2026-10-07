@@ -12,9 +12,10 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         self.onCheckForUpdates = onCheckForUpdates
 
         let contentSize = NSSize(width: 780, height: 620)
+        let minimumSize = NSSize(width: 760, height: 560)
         let window = NSWindow(
             contentRect: NSRect(origin: .zero, size: contentSize),
-            styleMask: [.titled, .closable, .fullSizeContentView],
+            styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
@@ -23,18 +24,17 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
         window.backgroundColor = NSColor(calibratedWhite: 0.11, alpha: 1)
-        window.minSize = contentSize
+        window.minSize = minimumSize
         window.maxSize = NSSize(width: 980, height: 900)
         window.collectionBehavior = [.moveToActiveSpace]
         window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-        window.standardWindowButton(.zoomButton)?.isHidden = true
 
         super.init(window: window)
 
         window.delegate = self
         let hosting = NSHostingView(
             rootView: SettingsRootView(preferences: preferences, onCheckForUpdates: onCheckForUpdates)
-                .frame(minWidth: contentSize.width, minHeight: contentSize.height)
+                .frame(minWidth: minimumSize.width, minHeight: minimumSize.height)
         )
         window.contentView = hosting
     }
@@ -311,33 +311,40 @@ private struct SettingsRootView: View {
                     .frame(maxWidth: 480, alignment: .leading)
                 }
                 .frame(maxWidth: .infinity)
-                updatesCard.frame(maxWidth: 480)
             }
             .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 24)
             .frame(maxWidth: 720).frame(maxWidth: .infinity)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Divider()
-            HStack(spacing: 16) {
-                Link(destination: URL(string: "https://github.com/mondary/media-downloader")!) {
-                    Label("GitHub", systemImage: "network")
-                }
-                Link(destination: URL(string: "https://github.com/mondary/media-downloader/issues")!) {
-                    Label("Issues", systemImage: "exclamationmark.bubble")
-                }
-                Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
-                    HStack(spacing: 4) {
-                        if let logo = bundledImage(named: "kofi-logo", in: "") {
-                            Image(nsImage: logo).resizable().frame(width: 12, height: 12)
-                        }
-                        Text(language.text("Soutenir sur Ko-fi", "Support on Ko-fi"))
+            VStack(spacing: 0) {
+                Divider()
+                updatesCard
+                    .frame(maxWidth: 720)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                Divider()
+                HStack(spacing: 16) {
+                    Link(destination: URL(string: "https://github.com/mondary/media-downloader")!) {
+                        Label("GitHub", systemImage: "network")
                     }
-                    .foregroundStyle(Color(red: 1, green: 0.37, blue: 0.36))
+                    Link(destination: URL(string: "https://github.com/mondary/media-downloader/issues")!) {
+                        Label("Issues", systemImage: "exclamationmark.bubble")
+                    }
+                    Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
+                        HStack(spacing: 4) {
+                            if let logo = bundledImage(named: "kofi-logo", in: "") {
+                                Image(nsImage: logo).resizable().frame(width: 12, height: 12)
+                            }
+                            Text(language.text("Soutenir sur Ko-fi", "Support on Ko-fi"))
+                        }
+                        .foregroundStyle(Color(red: 1, green: 0.37, blue: 0.36))
+                    }
+                    Spacer()
+                    Text("MIT · macOS 14+").foregroundStyle(.tertiary)
                 }
-                Spacer()
-                Text("MIT · macOS 14+").foregroundStyle(.tertiary)
+                .font(.caption).padding(.horizontal, 24).padding(.vertical, 14)
             }
-            .font(.caption).padding(.horizontal, 24).padding(.vertical, 14)
             .background(.regularMaterial)
         }
     }

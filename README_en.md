@@ -9,7 +9,7 @@
 
 [🇬🇧 EN](README_en.md) · [🇫🇷 FR](README.md)
 
-📦 project **v1.2026.27** · installable release **v1.2026.12** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 project **v1.2026.28** · installable release **v1.2026.12** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Native macOS video downloader powered by yt-dlp — supports YouTube (playlists), Instagram, X/Twitter, TikTok and thousands more sites.
 
