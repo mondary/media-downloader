@@ -39,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let menuBarController = MenuBarController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        UpdaterManager.shared.start()
         menuBarController.setup()
 
         activationHotKey.registerActivationHotKey(preferences.hotKeyShortcut(for: .activateApp))
@@ -117,7 +118,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.activate(ignoringOtherApps: true)
         }
 
-        model.checkForUpdates(manual: false)
     }
 
     private func presentSetupWindow(activate: Bool) {

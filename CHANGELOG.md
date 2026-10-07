@@ -4,6 +4,17 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.24] - 2026-10-07
+
+### Changed
+- Réglages réorganisés en sidebar avec recherche, sections propres à l’app, Support et Project Library avec assets réels ; À propos affiche les builds Stable/Dev, leur statut et la version installée.
+- Comparaison robuste des numéros de build CalVer à points et vérification manuelle sur des appcasts rafraîchis.
+
+## [v1.2026.23] - 2026-10-07
+
+### Added
+- Sparkle pour les mises à jour intégrées, avec canaux Stable et Dev.
+
 ## [v1.2026.22] - 2026-10-02
 
 ### Changed

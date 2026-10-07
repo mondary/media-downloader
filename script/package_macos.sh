@@ -9,7 +9,14 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 APP_VERSION="${APP_VERSION:-$(sed -n 's/^## \[\(v[^]]*\)\].*/\1/p' CHANGELOG.md | head -1)}"
 [[ -n "$APP_VERSION" ]] || { echo 'error: no versioned CHANGELOG entry' >&2; exit 1; }
-APP_BUILD="${APP_BUILD:-$(printf '%s' "$APP_VERSION" | tr -cd '0-9')}"
+BUILD_CHANNEL="release"
+if [[ "${PK_DEV_BUILD:-0}" == "1" ]]; then
+  BUILD_CHANNEL="dev"
+  APP_BUILD="$(date +%s)"
+  APP_VERSION="${APP_VERSION#v}-dev.$(date -u +%H%M)"
+else
+  APP_BUILD="${APP_BUILD:-${APP_VERSION#v}}"
+fi
 
 if [[ -f ".env" ]]; then
   set -a
@@ -81,6 +88,7 @@ swift build -c release
 swift build -c release --product pkmd
 BUILD_BINARY="$(swift build -c release --show-bin-path)/$APP_NAME"
 PKMD_BINARY="$(swift build -c release --product pkmd --show-bin-path)/pkmd"
+BUILD_DIR="$(swift build -c release --show-bin-path)"
 
 rm -rf "$RELEASE_DIR"
 mkdir -p "$APP_MACOS" "$APP_RESOURCES"
@@ -90,6 +98,25 @@ cp "$PKMD_BINARY" "$APP_MACOS/pkmd"
 chmod +x "$APP_MACOS/pkmd"
 cp "$PKMD_BINARY" "$RELEASE_DIR/pkmd-$APP_VERSION-macos-$ARCH"
 cp "$APP_ICON" "$APP_RESOURCES/AppIcon.icns"
+for resource_dir in ProjectIcons ProjectScreenshots; do
+  if [[ -d "$ROOT_DIR/Resources/$resource_dir" ]]; then
+    cp -R "$ROOT_DIR/Resources/$resource_dir" "$APP_RESOURCES/$resource_dir"
+  fi
+done
+if [[ -f "$ROOT_DIR/Resources/kofi-logo.png" ]]; then
+  cp "$ROOT_DIR/Resources/kofi-logo.png" "$APP_RESOURCES/kofi-logo.png"
+fi
+
+# Sparkle is a SwiftPM binary framework and must live inside the assembled app.
+FRAMEWORK_DIR="$APP_CONTENTS/Frameworks"
+mkdir -p "$FRAMEWORK_DIR"
+for framework in "$BUILD_DIR"/*.framework; do
+  [[ -d "$framework" ]] || continue
+  cp -R "$framework" "$FRAMEWORK_DIR/"
+done
+if [[ -n "$(find "$FRAMEWORK_DIR" -maxdepth 1 -name '*.framework' -print -quit)" ]]; then
+  install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_BINARY" 2>/dev/null || true
+fi
 
 cat >"$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -108,6 +135,14 @@ cat >"$INFO_PLIST" <<PLIST
   <string>${APP_VERSION#v}</string>
   <key>CFBundleVersion</key>
   <string>$APP_BUILD</string>
+  <key>SUFeedURL</key>
+  <string>https://raw.githubusercontent.com/mondary/media-downloader/main/appcast.xml</string>
+  <key>SUPublicEDKey</key>
+  <string>OoygS0py6kkvRJBB8QAXiAli30SXSYvV7V54Z0Gtcj0=</string>
+  <key>SUEnableInstallerLauncherService</key>
+  <true/>
+  <key>PKMediaDownloaderBuildChannel</key>
+  <string>$BUILD_CHANNEL</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>LSMinimumSystemVersion</key>

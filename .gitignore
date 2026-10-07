@@ -28,6 +28,10 @@ DerivedData/
 /GLM.md
 /OPENCODE.md
 .*
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+!.github/workflows/*.yaml
 node_modules/
 build/
 .venv/

@@ -11,17 +11,14 @@ final class AppModel: ObservableObject {
     @Published var statusMessage: String?
     @Published private(set) var lastDownloadFailed = false
     @Published var activeTrimSession: ActiveTrimSession?
-    @Published private(set) var isCheckingForUpdates = false
 
     private let preferences: PreferencesStore
     private let historyStore = HistoryStore()
     private let downloader = MediaDownloaderService()
     private let thumbnailGenerator = ThumbnailGenerator()
     private let trimExporter = TrimExportService()
-    private let updateChecker = UpdateChecker()
     private var pasteTask: Task<Void, Never>?
     private var completedDownloadPaths = Set<String>()
-    private var didRunAutomaticUpdateCheck = false
     private var settingsWindowController: SettingsWindowController?
 
     var downloadFolderPath: String {
@@ -114,56 +111,11 @@ final class AppModel: ObservableObject {
         activeTrimSession = nil
     }
 
-    func checkForUpdates(manual: Bool) {
-        if !manual {
-            guard !didRunAutomaticUpdateCheck else { return }
-            didRunAutomaticUpdateCheck = true
-        }
-
-        guard !isCheckingForUpdates else { return }
-        isCheckingForUpdates = true
-
-        Task { [weak self] in
-            guard let self else { return }
-
-            do {
-                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "v1.2026.12"
-                let result = try await updateChecker.check(currentVersion: currentVersion)
-                let downloadedUpdate: DownloadedUpdate?
-
-                if case .updateAvailable(let update) = result {
-                    downloadedUpdate = try await updateChecker.download(update)
-                } else {
-                    downloadedUpdate = nil
-                }
-
-                await MainActor.run {
-                    self.isCheckingForUpdates = false
-                    self.presentUpdateResult(
-                        result,
-                        downloadedUpdate: downloadedUpdate,
-                        currentVersion: currentVersion,
-                        manual: manual
-                    )
-                }
-            } catch {
-                await MainActor.run {
-                    self.isCheckingForUpdates = false
-                    if manual {
-                        self.presentUpdateError(error)
-                    }
-                }
-            }
-        }
-    }
-
     func showSettings() {
         if settingsWindowController == nil {
             settingsWindowController = SettingsWindowController(
                 preferences: preferences,
-                onCheckForUpdates: { [weak self] in
-                    self?.checkForUpdates(manual: true)
-                }
+                onCheckForUpdates: { UpdaterManager.shared.checkForUpdates() }
             )
         }
 
@@ -321,47 +273,4 @@ final class AppModel: ObservableObject {
         }
     }
 
-    private func presentUpdateResult(
-        _ result: UpdateCheckResult,
-        downloadedUpdate: DownloadedUpdate?,
-        currentVersion: String,
-        manual: Bool
-    ) {
-        switch result {
-        case .upToDate:
-            guard manual else { return }
-            let alert = NSAlert()
-            alert.messageText = "MediaDownloader is up to date"
-            alert.informativeText = "You are running version \(currentVersion)."
-            alert.icon = NSImage(named: NSImage.applicationIconName)
-            alert.addButton(withTitle: "OK")
-            alert.runModal()
-        case .updateAvailable(let update):
-            let alert = NSAlert()
-            alert.messageText = "MediaDownloader \(update.version) is ready"
-            alert.informativeText = downloadedUpdate == nil
-                ? "A new version is available. You are running \(currentVersion)."
-                : "The update has been downloaded in the background. You are running \(currentVersion)."
-            alert.icon = NSImage(named: NSImage.applicationIconName)
-            alert.addButton(withTitle: "Update")
-            alert.addButton(withTitle: "Later")
-
-            if alert.runModal() == .alertFirstButtonReturn {
-                if let downloadedUpdate {
-                    NSWorkspace.shared.open(downloadedUpdate.fileURL)
-                } else {
-                    NSWorkspace.shared.open(update.downloadURL ?? update.releaseURL)
-                }
-            }
-        }
-    }
-
-    private func presentUpdateError(_ error: Error) {
-        let alert = NSAlert()
-        alert.messageText = "Could not check for updates"
-        alert.informativeText = error.localizedDescription
-        alert.icon = NSImage(named: NSImage.applicationIconName)
-        alert.addButton(withTitle: "OK")
-        alert.runModal()
-    }
 }

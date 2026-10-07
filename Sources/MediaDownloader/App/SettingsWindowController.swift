@@ -11,7 +11,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         self.preferences = preferences
         self.onCheckForUpdates = onCheckForUpdates
 
-        let contentSize = NSSize(width: 520, height: 520)
+        let contentSize = NSSize(width: 780, height: 620)
         let window = NSWindow(
             contentRect: NSRect(origin: .zero, size: contentSize),
             styleMask: [.titled, .closable, .fullSizeContentView],
@@ -24,7 +24,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.isMovableByWindowBackground = true
         window.backgroundColor = NSColor(calibratedWhite: 0.11, alpha: 1)
         window.minSize = contentSize
-        window.maxSize = NSSize(width: 520, height: 800)
+        window.maxSize = NSSize(width: 980, height: 900)
         window.collectionBehavior = [.moveToActiveSpace]
         window.standardWindowButton(.miniaturizeButton)?.isHidden = true
         window.standardWindowButton(.zoomButton)?.isHidden = true
@@ -34,7 +34,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = self
         let hosting = NSHostingView(
             rootView: SettingsRootView(preferences: preferences, onCheckForUpdates: onCheckForUpdates)
-                .frame(width: contentSize.width, height: contentSize.height)
+                .frame(minWidth: contentSize.width, minHeight: contentSize.height)
         )
         window.contentView = hosting
     }
@@ -53,16 +53,70 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     }
 }
 
+enum MediaSettingsLanguage: String, CaseIterable, Identifiable {
+    case fr, en
+    var id: String { rawValue }
+    var flag: String { self == .fr ? "🇫🇷" : "🇬🇧" }
+    static var current: MediaSettingsLanguage {
+        MediaSettingsLanguage(rawValue: UserDefaults.standard.string(forKey: "mediaSettingsLanguage") ?? "en") ?? .en
+    }
+    func text(_ french: String, _ english: String) -> String { self == .fr ? french : english }
+}
+
+private enum MediaSettingsSection: String, CaseIterable, Identifiable {
+    case general, download, authentication, shortcuts, about, support, library
+    var id: String { rawValue }
+    var group: String { self == .about || self == .support || self == .library ? "PK PROJECTS" : "APP" }
+    var icon: String {
+        switch self {
+        case .general: "slider.horizontal.3"
+        case .download: "arrow.down.to.line"
+        case .authentication: "person.crop.circle.badge.key"
+        case .shortcuts: "keyboard"
+        case .about: "info.circle"
+        case .support: "heart.fill"
+        case .library: "square.grid.2x2"
+        }
+    }
+    func title(_ language: MediaSettingsLanguage) -> String {
+        switch self {
+        case .general: language.text("Général", "General")
+        case .download: language.text("Téléchargement", "Download")
+        case .authentication: language.text("Authentification", "Authentication")
+        case .shortcuts: language.text("Raccourcis", "Shortcuts")
+        case .about: language.text("À propos", "About")
+        case .support: language.text("Support", "Support")
+        case .library: "Project Library"
+        }
+    }
+}
+
 // MARK: - SwiftUI Settings Root
 
 private struct SettingsRootView: View {
     @ObservedObject var preferences: PreferencesStoreWrapper
+    @ObservedObject private var updater = UpdaterManager.shared
+    @AppStorage("updateChannel") private var updateChannel = "stable"
+    private var isDevBuild: Bool {
+        (Bundle.main.object(forInfoDictionaryKey: "PKMediaDownloaderBuildChannel") as? String) == "dev"
+    }
     let onCheckForUpdates: () -> Void
+    @State private var selection: MediaSettingsSection = .general
+    @State private var searchText = ""
+    @State private var language = MediaSettingsLanguage.current
     @State private var accessibilityGranted = AXIsProcessTrusted()
     @State private var engineVersion: String?
     @State private var isUpdatingEngine = false
     @State private var engineUpdateResult: String?
     private let statusTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
+
+    private var visibleSections: [MediaSettingsSection] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return MediaSettingsSection.allCases }
+        return MediaSettingsSection.allCases.filter {
+            $0.title(language).localizedCaseInsensitiveContains(query) || $0.rawValue.localizedCaseInsensitiveContains(query)
+        }
+    }
 
     init(preferences: PreferencesStore, onCheckForUpdates: @escaping () -> Void) {
         self.preferences = PreferencesStoreWrapper(preferences)
@@ -70,19 +124,14 @@ private struct SettingsRootView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                appSection
-                engineSection
-                downloadSection
-                socialMediaSection
-                accessibilitySection
-                shortcutsSection
-                linksSection
-            }
-            .padding(24)
+        HStack(spacing: 0) {
+            sidebar
+            Divider()
+            selectedContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .background(Color(NSColor(calibratedWhite: 0.11, alpha: 1)))
+        .frame(minWidth: 760, minHeight: 560)
+        .background(Color(nsColor: .windowBackgroundColor))
         .task {
             engineVersion = await Task.detached(priority: .utility) {
                 DependencyChecker.version(ofTool: "yt-dlp")
@@ -100,6 +149,104 @@ private struct SettingsRootView: View {
         .onReceive(statusTimer) { _ in
             accessibilityGranted = AXIsProcessTrusted()
         }
+        .onAppear {
+            updater.refreshAvailableVersions()
+            language = .current
+        }
+    }
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable().interpolation(.high).frame(width: 34, height: 34)
+                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("PKMediaDownloader").font(.headline)
+                    Text(language.text("Téléchargements multimédias", "Media downloads"))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 16).padding(.top, 22).padding(.bottom, 24)
+
+            Text(language.text("RÉGLAGES", "SETTINGS"))
+                .font(.system(size: 10, weight: .bold)).foregroundStyle(.tertiary)
+                .padding(.horizontal, 18).padding(.bottom, 8)
+            HStack(spacing: 7) {
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                TextField(language.text("Rechercher", "Search settings"), text: $searchText).textFieldStyle(.plain)
+            }
+            .padding(.horizontal, 10).frame(height: 30)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 7))
+            .padding(.horizontal, 10).padding(.bottom, 10)
+
+            ForEach(["APP", "PK PROJECTS"], id: \.self) { group in
+                let sections = visibleSections.filter { $0.group == group }
+                if !sections.isEmpty {
+                    Text(group == "APP" ? language.text("APPLICATION", "APP") : group)
+                        .font(.system(size: 9, weight: .bold)).foregroundStyle(.tertiary)
+                        .padding(.horizontal, 18).padding(.top, 8).padding(.bottom, 4)
+                    ForEach(sections) { item in
+                        Button { selection = item } label: {
+                            Label(item.title(language), systemImage: item.icon)
+                                .font(.system(size: 12, weight: selection == item ? .semibold : .regular))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 10).frame(height: 34)
+                                .foregroundStyle(item == .support ? Color(red: 1, green: 0.37, blue: 0.36) : .primary)
+                                .background(selection == item ? Color.accentColor.opacity(0.13) : .clear, in: RoundedRectangle(cornerRadius: 8))
+                        }
+                        .buttonStyle(.plain).padding(.horizontal, 8)
+                    }
+                }
+            }
+
+            Spacer(minLength: 12)
+            HStack(spacing: 8) {
+                ForEach(MediaSettingsLanguage.allCases) { item in
+                    Button(item.flag) {
+                        language = item
+                        UserDefaults.standard.set(item.rawValue, forKey: "mediaSettingsLanguage")
+                    }
+                    .buttonStyle(.plain).opacity(language == item ? 1 : 0.55).help(item == .fr ? "Français" : "English")
+                }
+            }
+            .padding(.horizontal, 18).padding(.bottom, 10)
+            HStack(spacing: 5) {
+                Text("PKMediaDownloader \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev")")
+                    .font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(.secondary)
+                    .lineLimit(1).minimumScaleFactor(0.75)
+                if let available = updater.availableUpdateVersion {
+                    Button { onCheckForUpdates() } label: {
+                        Label(available, systemImage: "arrow.down.circle.fill")
+                            .font(.system(size: 9, weight: .semibold, design: .monospaced)).lineLimit(1)
+                    }
+                    .buttonStyle(.plain).foregroundStyle(Color.accentColor)
+                    .help(language.text("Installer la version %@", "Install version %@").replacingOccurrences(of: "%@", with: available))
+                }
+            }
+            .padding(.horizontal, 14).padding(.bottom, 18)
+        }
+        .frame(width: 220).background(.regularMaterial)
+    }
+
+    @ViewBuilder
+    private var selectedContent: some View {
+        switch selection {
+        case .general:
+            ScrollView { VStack(alignment: .leading, spacing: 20) { appSection; engineSection }.padding(24) }
+        case .download:
+            ScrollView { downloadSection.padding(24) }
+        case .authentication:
+            ScrollView { socialMediaSection.padding(24) }
+        case .shortcuts:
+            ScrollView { VStack(alignment: .leading, spacing: 20) { accessibilitySection; shortcutsSection }.padding(24) }
+        case .about:
+            aboutSection
+        case .support:
+            supportSection
+        case .library:
+            projectLibrarySection
+        }
     }
 
     // MARK: - App Section
@@ -109,28 +256,189 @@ private struct SettingsRootView: View {
             Text("Application")
                 .font(.headline)
 
-            HStack(spacing: 12) {
-                Image(systemName: "arrow.down.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.purple)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 12) {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.purple)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("PKMediaDownloader")
-                        .font(.title3.weight(.semibold))
-                    Text("v1.2026.12 — Native macOS video downloader")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("PKMediaDownloader")
+                            .font(.title3.weight(.semibold))
+                        Text(language.text("v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev") — Téléchargeur vidéo natif pour macOS", "v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev") — Native macOS video downloader"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
                 }
-
-                Spacer()
-
-                Button("Check for Updates") { onCheckForUpdates() }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
             }
             .padding(14)
             .background(cardBackground)
         }
+    }
+
+    // MARK: - About and Updates
+
+    private var aboutSection: some View {
+        ScrollView {
+            VStack(spacing: 18) {
+                VStack(spacing: 0) {
+                    Image(nsImage: NSApp.applicationIconImage)
+                        .resizable().interpolation(.high).frame(width: 88, height: 88)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .padding(.top, 36).padding(.bottom, 16)
+                    Text("PKMediaDownloader").font(.system(size: 24, weight: .bold))
+                    Text(language.text("Version installée", "Installed version") + " \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"))")
+                        .font(.system(size: 13, weight: .medium, design: .monospaced))
+                        .foregroundStyle(.secondary).padding(.top, 4).help(language.text("Version installée", "Installed version"))
+                    Text(language.text("Par PK", "By PK"))
+                        .font(.system(size: 13)).foregroundStyle(.secondary).padding(.top, 2).padding(.bottom, 24)
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text(language.text("Salut l’ami,", "Hey friend,")).italic().font(.system(size: 13))
+                        Text(language.text(
+                            "PKMediaDownloader est une application macOS native pour télécharger, découper et exporter des médias. Les traitements restent sur ce Mac.",
+                            "PKMediaDownloader is a native macOS app to download, trim and export media. Processing stays on this Mac."
+                        )).font(.system(size: 13)).foregroundStyle(.secondary)
+                        Text(language.text("Merci d’utiliser l’application.", "Thanks for using the app."))
+                            .font(.system(size: 13)).foregroundStyle(.secondary).padding(.top, 8)
+                        Text("— PK").font(.system(size: 13)).foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: 480, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity)
+                updatesCard.frame(maxWidth: 480)
+                creditsSection.frame(maxWidth: 480)
+            }
+            .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 24)
+            .frame(maxWidth: 720).frame(maxWidth: .infinity)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Divider()
+            HStack(spacing: 16) {
+                Link(destination: URL(string: "https://github.com/mondary/media-downloader")!) {
+                    Label("GitHub", systemImage: "network")
+                }
+                Link(destination: URL(string: "https://github.com/mondary/media-downloader/issues")!) {
+                    Label("Issues", systemImage: "exclamationmark.bubble")
+                }
+                Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
+                    HStack(spacing: 4) {
+                        if let logo = bundledImage(named: "kofi-logo", in: "") {
+                            Image(nsImage: logo).resizable().frame(width: 12, height: 12)
+                        }
+                        Text(language.text("Soutenir sur Ko-fi", "Support on Ko-fi"))
+                    }
+                    .foregroundStyle(Color(red: 1, green: 0.37, blue: 0.36))
+                }
+                Spacer()
+                Text("MIT · macOS 14+").foregroundStyle(.tertiary)
+            }
+            .font(.caption).padding(.horizontal, 24).padding(.vertical, 14)
+            .background(.regularMaterial)
+        }
+    }
+
+    private var creditsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(language.text("Crédits", "Credits")).font(.headline)
+            Text(language.text("Outils et dépendances utilisés", "Tools and dependencies used"))
+                .font(.system(size: 12, weight: .semibold))
+            creditLink("yt-dlp", detail: language.text("Téléchargement des médias", "Media downloading"), url: "https://github.com/yt-dlp/yt-dlp")
+            creditLink("FFmpeg", detail: language.text("Conversion, extraction et découpe vidéo", "Video conversion, extraction and trimming"), url: "https://ffmpeg.org/")
+            creditLink("Sparkle", detail: language.text("Mises à jour de l’app macOS", "macOS app updates"), url: "https://github.com/sparkle-project/Sparkle")
+            Divider().padding(.vertical, 3)
+            Text(language.text("Projet amont", "Upstream project")).font(.system(size: 12, weight: .semibold))
+            creditLink("pixel-point/media-downloader", detail: language.text("Projet d’origine adapté pour PKMediaDownloader", "Original project adapted for PKMediaDownloader"), url: "https://github.com/pixel-point/media-downloader")
+            Text(language.text(
+                "Cobalt est une solution externe facultative, ouverte dans le navigateur uniquement à la demande.",
+                "Cobalt is an optional external fallback, opened in the browser only when requested."
+            )).font(.caption).foregroundStyle(.secondary).padding(.top, 2)
+        }
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.025)))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.primary.opacity(0.08), lineWidth: 1))
+    }
+
+    private func creditLink(_ name: String, detail: String, url: String) -> some View {
+        Link(destination: URL(string: url)!) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(name).font(.system(size: 12, weight: .medium)).foregroundStyle(.primary)
+                Text("— \(detail)").font(.system(size: 12)).foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                Image(systemName: "arrow.up.right").font(.system(size: 9)).foregroundStyle(.tertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var updatesCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(language.text("Mises à jour", "Updates")).font(.headline)
+            HStack(spacing: 10) {
+                updateVersionColumn(
+                    title: language.text("Stable", "Stable"),
+                    value: updater.latestStableVersion ?? language.text("Non publiée", "Not published"),
+                    status: updater.versionStatus(for: "stable")
+                )
+                updateVersionColumn(
+                    title: language.text("Dev", "Dev"),
+                    value: updater.latestDevVersion ?? language.text("Non publiée", "Not published"),
+                    status: updater.versionStatus(for: "dev")
+                )
+            }
+            HStack(spacing: 12) {
+                Picker(language.text("Canal de mise à jour", "Update channel"), selection: Binding(
+                    get: { isDevBuild ? "dev" : updateChannel },
+                    set: {
+                        guard !isDevBuild else { return }
+                        updateChannel = $0
+                        UpdaterManager.shared.updateChannelChanged(to: $0)
+                    }
+                )) {
+                    Text("Stable").tag("stable")
+                    Text("Dev").tag("dev")
+                }
+                .pickerStyle(.segmented).labelsHidden().frame(width: 190).disabled(isDevBuild)
+                Spacer(minLength: 0)
+                Button { onCheckForUpdates() } label: {
+                    Label(
+                        updateButtonTitle,
+                        systemImage: updater.availableUpdateVersion == nil ? "arrow.triangle.2.circlepath" : "arrow.down.circle.fill"
+                    )
+                }
+                .buttonStyle(.borderedProminent).disabled(!updater.canCheckForUpdates)
+            }
+            Text(language.text(
+                isDevBuild ? "Cette build Dev suit le canal Dev." : "Les versions Stable sont publiées et testées ; Dev suit les builds de développement.",
+                isDevBuild ? "This Dev build follows the Dev channel." : "Stable builds are tested releases; Dev follows development builds."
+            ))
+            .font(.caption).foregroundStyle(.secondary)
+        }
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.025)))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.primary.opacity(0.08), lineWidth: 1))
+    }
+
+    private var updateButtonTitle: String {
+        guard let version = updater.availableUpdateVersion else {
+            return language.text("Rechercher les mises à jour…", "Check for Updates…")
+        }
+        return language.text("Installer %@", "Install %@").replacingOccurrences(of: "%@", with: version)
+    }
+
+    private func updateVersionColumn(title: String, value: String, status: MediaChannelVersionStatus) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title).font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+            Text(value).font(.system(size: 14, weight: .semibold, design: .monospaced))
+                .lineLimit(1).minimumScaleFactor(0.75).help(value)
+            Label(status.title(language: language), systemImage: status.symbol)
+                .font(.system(size: 10, weight: .medium)).foregroundStyle(status.color)
+                .lineLimit(1).minimumScaleFactor(0.75)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading).padding(10)
+        .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     // MARK: - Engine Section
@@ -369,44 +677,264 @@ private struct SettingsRootView: View {
         .padding(.vertical, 6)
     }
 
-    // MARK: - Links Section
+    // MARK: - Support and Project Library
 
     private var linksSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Links")
-                .font(.headline)
-
-            HStack(spacing: 12) {
-                Link(destination: URL(string: "https://github.com/pixel-point/media-downloader")!) {
-                    Label("Original Project (GitHub)", systemImage: "arrow.up.right.square")
-                        .font(.subheadline)
-                }
-
-                Spacer()
-
-                Link(destination: URL(string: "https://github.com/mondary/media-downloader")!) {
-                    Label("PKMediaDownloader (GitHub)", systemImage: "arrow.up.right.square")
-                        .font(.subheadline)
-                }
+            Text(language.text("Liens", "Links")).font(.headline)
+            Link(destination: URL(string: "https://github.com/pixel-point/media-downloader")!) {
+                Label(language.text("Projet d’origine sur GitHub", "Original project on GitHub"), systemImage: "arrow.up.right.square")
+                    .font(.subheadline)
             }
-
             Link(destination: URL(string: "https://cobalt.tools/")!) {
-                Label("Cobalt — browser fallback when a download fails", systemImage: "lifepreserver")
+                Label(language.text("Cobalt — solution de secours dans le navigateur", "Cobalt — browser fallback when a download fails"), systemImage: "lifepreserver")
                     .font(.subheadline)
             }
-
             Link(destination: URL(string: "https://github.com/imputnet/cobalt")!) {
-                Label("Cobalt — source code (GitHub)", systemImage: "arrow.up.right.square")
-                    .font(.subheadline)
-            }
-
-            Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
-                Label("Support on Ko-fi", systemImage: "heart")
-                    .font(.subheadline)
+                Label("Cobalt — GitHub", systemImage: "arrow.up.right.square").font(.subheadline)
             }
         }
-        .padding(14)
-        .background(cardBackground)
+        .padding(14).background(cardBackground)
+    }
+
+    private var supportSection: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                VStack(spacing: 8) {
+                    Image(systemName: "heart.fill").font(.system(size: 36))
+                        .foregroundStyle(Color(red: 1, green: 0.37, blue: 0.36))
+                    Text(language.text("Soutenir PKMediaDownloader", "Support PKMediaDownloader"))
+                        .font(.system(size: 20, weight: .bold))
+                    Text(language.text("Si l’application vous est utile, vous pouvez soutenir son développement.", "If this app is useful to you, consider supporting its development."))
+                        .font(.system(size: 13)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                }
+                .padding(.top, 36).padding(.bottom, 24)
+                VStack(spacing: 16) {
+                    HStack(spacing: 12) {
+                        Group {
+                            if let logo = bundledImage(named: "kofi-logo", in: "") {
+                                Image(nsImage: logo).resizable().scaledToFit().frame(width: 34, height: 34)
+                            } else {
+                                Image(systemName: "cup.and.saucer.fill").font(.system(size: 20))
+                                    .foregroundStyle(Color(red: 1, green: 0.37, blue: 0.36)).frame(width: 36)
+                            }
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Ko-fi").font(.system(size: 14, weight: .semibold))
+                            Text(language.text("Offrir un café au développeur", "Support the developer with a coffee"))
+                                .font(.system(size: 12)).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
+                            HStack(spacing: 6) {
+                                if let logo = bundledImage(named: "kofi-logo", in: "") {
+                                    Image(nsImage: logo).resizable().scaledToFit().frame(width: 15, height: 15)
+                                }
+                                Text(language.text("Soutenir sur Ko-fi", "Support on Ko-fi"))
+                            }
+                            .font(.system(size: 13, weight: .medium)).foregroundStyle(.white)
+                            .padding(.horizontal, 16).padding(.vertical, 7)
+                            .background(Color(red: 1, green: 0.37, blue: 0.36), in: RoundedRectangle(cornerRadius: 8))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(16).background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
+                    VStack(spacing: 0) {
+                        supportLink(icon: "network", title: "GitHub", subtitle: language.text("Code source et versions", "Source code and releases"), url: "https://github.com/mondary/media-downloader")
+                        Divider().padding(.leading, 52)
+                        supportLink(icon: "exclamationmark.bubble", title: language.text("Signaler un problème", "Report an issue"), subtitle: language.text("Bugs, idées et retours", "Bugs, ideas and feedback"), url: "https://github.com/mondary/media-downloader/issues")
+                        Divider().padding(.leading, 52)
+                        supportLink(icon: "person.crop.circle", title: language.text("PK sur GitHub", "PK on GitHub"), subtitle: language.text("Découvrir les autres projets", "Discover other projects"), url: "https://github.com/mondary")
+                    }
+                    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
+                    linksSection
+                }
+                .frame(maxWidth: 480).padding(.bottom, 32)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var projectLibrarySection: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                VStack(spacing: 8) {
+                    Image(systemName: "square.grid.2x2.fill").font(.system(size: 36, weight: .medium))
+                        .foregroundStyle(Color.accentColor)
+                    Text("Project Library").font(.system(size: 20, weight: .bold))
+                    Text(language.text("Découvrez les autres outils et projets que je développe.", "Discover the other tools and projects I build."))
+                        .font(.system(size: 13)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity).padding(.bottom, 4)
+
+                featuredProjectCard(mediaProject)
+                Text(language.text("Plus de projets", "More projects"))
+                    .font(.system(size: 18, weight: .bold, design: .rounded)).padding(.top, 6)
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
+                    ForEach(otherProjects) { project in projectCard(project) }
+                }
+                Link(destination: URL(string: "https://github.com/mondary")!) {
+                    Label(language.text("Voir tous les dépôts sur GitHub", "View all repositories on GitHub"), systemImage: "arrow.up.right.square")
+                }
+                .buttonStyle(.borderedProminent).padding(.top, 4)
+            }
+            .padding(.horizontal, 28).padding(.top, 32).padding(.bottom, 28)
+            .frame(maxWidth: 860).frame(maxWidth: .infinity)
+        }
+    }
+
+    private var mediaProject: MediaProject {
+        MediaProject(
+            id: "media-downloader", title: "PKMediaDownloader", kind: "macOS app",
+            description: language.text(
+                "Téléchargez des vidéos avec yt-dlp — YouTube, Instagram, X, TikTok et des milliers d’autres sites.",
+                "Download videos with yt-dlp — YouTube, Instagram, X, TikTok and thousands more."
+            ),
+            iconAsset: "PKMediaDownloader", screenshot: "PKMediaDownloader", tint: Color(red: 0.96, green: 0.25, blue: 0.37)
+        )
+    }
+
+    private var otherProjects: [MediaProject] {
+        [
+            MediaProject(id: "PKwindowsManagement", title: "PKwindowsManagement", kind: "macOS app", description: language.text("Gérez les fenêtres au clavier, les Rooms et les apps.", "Manage windows, Rooms and apps from the keyboard."), iconAsset: "PKwindowsManagement", screenshot: nil, tint: Color.orange),
+            MediaProject(id: "PKbrain", title: "PKbrain", kind: "macOS app", description: language.text("Notes avec calcul inline, palette de commandes et raccourcis.", "Notes with inline calculation, command palette and shortcuts."), iconAsset: "PKbrain", screenshot: nil, tint: Color.indigo),
+            MediaProject(id: "Macos_PKarchives", title: "PKarchives", kind: "macOS app", description: language.text("Archivez le Bureau vers Google Drive avec rclone.", "Archive your Desktop to Google Drive with rclone."), iconAsset: "PKarchives", screenshot: "PKarchives", tint: Color.purple),
+            MediaProject(id: "PKmonitor", title: "PKMonitor", kind: "macOS app", description: language.text("CPU, GPU, RAM, réseau et disque dans la barre des menus.", "CPU, GPU, RAM, network and disk in the menu bar."), iconAsset: "PKmonitor", screenshot: "PKmonitor", tint: Color.cyan),
+            MediaProject(id: "Macos_PKpowerlines", title: "PKpowerlines", kind: "macOS app", description: language.text("Affichez RAM, CPU, réseau ou batterie sur chaque écran.", "Show RAM, CPU, network or battery across your displays."), iconAsset: "PKpowerlines", screenshot: "PKpowerlines", tint: Color.green),
+            MediaProject(id: "PKmac-cleanup", title: "LaunchPad", kind: "macOS app", description: language.text("Auditez les agents utilisateur et services système.", "Audit user agents and system daemons."), iconAsset: "PKmac-cleanup", screenshot: nil, tint: Color.pink),
+            MediaProject(id: "Chrome_PKshortcuts", title: "PK Chrome Shortcuts", kind: "Chrome extension", description: language.text("Contrôlez onglets, navigation et split view au clavier.", "Control tabs, navigation and split view with the keyboard."), iconAsset: "PKshortcuts", screenshot: nil, tint: Color.orange)
+        ]
+    }
+
+    private func featuredProjectCard(_ project: MediaProject) -> some View {
+        Link(destination: project.url) {
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 8) {
+                    projectIcon(project, size: 56)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
+                    Text(project.title).font(.system(size: 24, weight: .bold, design: .rounded)).foregroundStyle(.primary)
+                    Text(project.kind.uppercased()).font(.system(size: 10, weight: .bold)).foregroundStyle(project.tint)
+                    Text(project.description).font(.system(size: 13)).foregroundStyle(.secondary).lineLimit(3)
+                    Label(language.text("Étoiler sur GitHub", "Star on GitHub"), systemImage: "star.fill")
+                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                        .padding(.horizontal, 12).padding(.vertical, 6).background(Capsule().fill(Color.accentColor)).padding(.top, 4)
+                }
+                .frame(maxWidth: 340, alignment: .leading).padding(22)
+                projectMedia(project, iconSize: 96).frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .frame(height: 210, alignment: .leading)
+            .background(Color(nsColor: .controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color(nsColor: .separatorColor).opacity(0.5), lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func projectCard(_ project: MediaProject) -> some View {
+        Link(destination: project.url) {
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack(alignment: .topLeading) {
+                    projectMedia(project, iconSize: 74).frame(maxWidth: .infinity).frame(height: 150)
+                    Text(project.kind.uppercased()).font(.system(size: 9, weight: .bold)).foregroundStyle(.white)
+                        .padding(.horizontal, 8).padding(.vertical, 4).background(Capsule().fill(.ultraThinMaterial)).padding(10)
+                }
+                HStack(spacing: 10) {
+                    projectIcon(project, size: 30).clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(project.title).font(.system(size: 14, weight: .semibold)).foregroundStyle(.primary).lineLimit(1)
+                        Text(project.description).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "arrow.up.right").font(.caption).foregroundStyle(.tertiary)
+                }
+                .padding(14)
+            }
+            .background(Color(nsColor: .controlBackgroundColor))
+            .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous).stroke(Color(nsColor: .separatorColor).opacity(0.5), lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func projectMedia(_ project: MediaProject, iconSize: CGFloat) -> some View {
+        if let screenshot = project.screenshot, let image = bundledImage(named: screenshot, in: "ProjectScreenshots") {
+            GeometryReader { proxy in
+                Image(nsImage: image).resizable().scaledToFill()
+                    .frame(width: proxy.size.width, height: proxy.size.height).clipped()
+            }
+        } else {
+            ZStack {
+                LinearGradient(colors: [project.tint.opacity(0.75), project.tint.opacity(0.35)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                projectIcon(project, size: iconSize).clipShape(RoundedRectangle(cornerRadius: iconSize / 5, style: .continuous))
+                    .shadow(color: .black.opacity(0.3), radius: 10, y: 5)
+            }
+        }
+    }
+
+    private func projectIcon(_ project: MediaProject, size: CGFloat) -> some View {
+        Group {
+            if let image = bundledImage(named: project.iconAsset, in: "ProjectIcons") {
+                Image(nsImage: image).resizable().interpolation(.high).scaledToFit()
+            } else {
+                Image(nsImage: NSApp.applicationIconImage).resizable().interpolation(.high).scaledToFit()
+            }
+        }
+        .frame(width: size, height: size)
+    }
+
+    private func bundledImage(named name: String, in directory: String) -> NSImage? {
+        let subdirectory = directory.isEmpty ? nil : directory
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png", subdirectory: subdirectory)
+            ?? Bundle.main.resourceURL?.appendingPathComponent(directory).appendingPathComponent("\(name).png") else { return nil }
+        return NSImage(contentsOf: url)
+    }
+
+    private func supportLink(icon: String, title: String, subtitle: String, url: String) -> some View {
+        Link(destination: URL(string: url)!) {
+            HStack(spacing: 12) {
+                Image(systemName: icon).font(.system(size: 16)).foregroundStyle(.secondary).frame(width: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).font(.system(size: 13, weight: .medium))
+                    Text(subtitle).font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "arrow.up.right").font(.system(size: 11)).foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 16).padding(.vertical, 10).contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func projectRow(_ title: String, subtitle: String, icon: String, color: Color, url: String) -> some View {
+        Link(destination: URL(string: url)!) {
+            HStack(spacing: 12) {
+                Image(systemName: icon).font(.system(size: 16, weight: .semibold)).foregroundStyle(color)
+                    .frame(width: 38, height: 38).background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).font(.system(size: 13, weight: .semibold))
+                    Text(subtitle).font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "arrow.up.right").font(.system(size: 11)).foregroundStyle(.tertiary)
+            }
+            .padding(12).background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func settingsPageHeader(_ title: String, _ subtitle: String, icon: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon).font(.system(size: 19)).foregroundStyle(Color.accentColor)
+                .frame(width: 42, height: 42).background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.system(size: 21, weight: .bold))
+                Text(subtitle).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .padding(.bottom, 4)
     }
 
     // MARK: - Helpers
@@ -419,6 +947,17 @@ private struct SettingsRootView: View {
                     .stroke(Color.white.opacity(0.08), lineWidth: 1)
             )
     }
+}
+
+private struct MediaProject: Identifiable {
+    let id: String
+    let title: String
+    let kind: String
+    let description: String
+    let iconAsset: String
+    let screenshot: String?
+    let tint: Color
+    var url: URL { URL(string: "https://github.com/mondary/\(id)")! }
 }
 
 // MARK: - Observable Wrapper

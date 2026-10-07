@@ -9,7 +9,7 @@
 
 [🇬🇧 EN](README_en.md) · [🇫🇷 FR](README.md)
 
-📦 project **v1.2026.22** · installable release **v1.2026.12** · ☕ [Ko-fi](https://ko-fi.com/pouark)
+📦 project **v1.2026.24** · installable release **v1.2026.12** · ☕ [Ko-fi](https://ko-fi.com/pouark)
 
 ✨ Native macOS video downloader powered by yt-dlp — supports YouTube (playlists), Instagram, X/Twitter, TikTok and thousands more sites.
 
@@ -26,6 +26,8 @@
 - **Menubar icon** — quick access
 - **Auto-paste** — clipboard URLs are detected automatically
 - **Cobalt fallback** — external link shown after a failed download, without automatically sending the URL
+- **Sparkle updates** — in-app update checks with Stable and Dev channels
+- **PK settings** — searchable sidebar with app-specific General/Download/Authentication/Shortcuts sections, Support and Project Library; About compares Stable/Dev builds and shows their status and the installed version
 
 ## 🧠 Usage
 

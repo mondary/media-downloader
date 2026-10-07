@@ -1,0 +1,70 @@
+name: Sparkle Dev build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Package.swift
+      - Sources/**
+      - script/**
+      - appcast-dev.xml
+      - .github/workflows/sparkle-dev.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: media-downloader-dev
+  cancel-in-progress: true
+
+jobs:
+  dev:
+    if: ${{ !contains(github.event.head_commit.message, 'appcast') }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build Dev app
+        env:
+          CI_UNSIGNED: "1"
+          PK_DEV_BUILD: "1"
+        run: ./script/package_macos.sh
+
+      - name: Package app for Sparkle
+        run: ditto -c -k --keepParent dist/release/PKMediaDownloader.app PKMediaDownloader-dev.zip
+
+      - name: Read versions
+        id: ver
+        run: |
+          echo "bundle=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' dist/release/PKMediaDownloader.app/Contents/Info.plist)" >> "$GITHUB_OUTPUT"
+          echo "short=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' dist/release/PKMediaDownloader.app/Contents/Info.plist)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload permanent Dev release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create dev --prerelease --title "PKMediaDownloader Dev" --notes "Latest automatic Dev build from main." || true
+          gh release upload dev PKMediaDownloader-dev.zip -R mondary/media-downloader --clobber
+
+      - name: Sign Dev appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          BUNDLE_VERSION: ${{ steps.ver.outputs.bundle }}
+          SHORT_VERSION: ${{ steps.ver.outputs.short }}
+        run: |
+          python3 -m venv /tmp/sv
+          /tmp/sv/bin/pip -q install cryptography
+          /tmp/sv/bin/python script/sparkle_dev_release.py PKMediaDownloader-dev.zip "$BUNDLE_VERSION" "$SHORT_VERSION" mondary/media-downloader PKMediaDownloader 14.0
+
+      - name: Publish Dev appcast
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add appcast-dev.xml
+          git commit -m "MAJ: appcast dev media downloader" || exit 0
+          git fetch origin main
+          git rebase origin/main
+          git push "https://x-access-token:${GH_TOKEN}@github.com/mondary/media-downloader.git" HEAD:main
