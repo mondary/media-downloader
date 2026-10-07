@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.25] - 2026-10-07
+
+### Fixed
+- Clé publique Sparkle alignée sur la clé de signature EdDSA du trousseau ; aucune build publiée ne vérifiait l'ancienne clé (feeds jamais publiés).
+
 ## [v1.2026.24] - 2026-10-07
 
 ### Changed
