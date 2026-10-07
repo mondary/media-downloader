@@ -135,16 +135,47 @@ final class MenuBarController {
         versionItem.isEnabled = false
         menu.addItem(versionItem)
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: language.text("Ouvrir la fenêtre principale", "Open Main Window"), action: #selector(openMainWindow), keyEquivalent: "o"))
-        menu.addItem(NSMenuItem(title: language.text("Réglages…", "Settings…"), action: #selector(openSettings), keyEquivalent: ","))
-        let supportItem = NSMenuItem(title: language.text("Soutenir sur Ko-fi ↗", "Support on Ko-fi ↗"), action: #selector(openSupportPage), keyEquivalent: "")
+        let mainWindowTitle = language.text("Ouvrir la fenêtre principale", "Open Main Window")
+        let mainWindowItem = NSMenuItem(title: mainWindowTitle, action: #selector(openMainWindow), keyEquivalent: "o")
+        mainWindowItem.image = menuSymbol("macwindow", description: mainWindowTitle)
+        menu.addItem(mainWindowItem)
+
+        let settingsTitle = language.text("Réglages…", "Settings…")
+        let settingsItem = NSMenuItem(title: settingsTitle, action: #selector(openSettings), keyEquivalent: ",")
+        settingsItem.image = menuSymbol("gearshape", description: settingsTitle)
+        menu.addItem(settingsItem)
+
+        let supportTitle = language.text("Soutenir sur Ko-fi", "Support on Ko-fi")
+        let supportItem = NSMenuItem(title: supportTitle, action: #selector(openSupportPage), keyEquivalent: "")
+        supportItem.image = kofiMenuImage()
         menu.addItem(supportItem)
+
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: language.text("Quitter", "Quit"), action: #selector(quitApp), keyEquivalent: "q"))
+        let quitTitle = language.text("Quitter", "Quit")
+        let quitItem = NSMenuItem(title: quitTitle, action: #selector(quitApp), keyEquivalent: "q")
+        quitItem.image = menuSymbol("power", description: quitTitle)
+        menu.addItem(quitItem)
         for item in menu.items where item.action != nil {
             item.target = self
         }
         statusMenu = menu
+    }
+
+    private func menuSymbol(_ name: String, description: String) -> NSImage? {
+        guard let image = NSImage(systemSymbolName: name, accessibilityDescription: description) else { return nil }
+        image.size = NSSize(width: 16, height: 16)
+        image.isTemplate = true
+        return image
+    }
+
+    private func kofiMenuImage() -> NSImage? {
+        guard let url = Bundle.main.url(forResource: "kofi-logo", withExtension: "png"),
+              let image = NSImage(contentsOf: url) else {
+            return menuSymbol("cup.and.saucer.fill", description: "Ko-fi")
+        }
+        image.size = NSSize(width: 16, height: 16)
+        image.isTemplate = false
+        return image
     }
 
     @objc private func statusItemClicked(_ sender: Any?) {

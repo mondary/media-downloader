@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.2026.32] - 2026-10-07
+
+### Fixed
+- Logo Ko-fi ajouté au menu contextuel de la barre des menus ; icônes des autres actions alignées sur la même colonne.
+
 ## [v1.2026.31] - 2026-10-07
 
 ### Changed
