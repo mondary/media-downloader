@@ -4,6 +4,12 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.27] - 2026-10-07
+
+### Changed
+- Crédits déplacés dans leur propre section, intitulé français de la bibliothèque corrigé et liens techniques en double retirés de Soutenir.
+- Les builds du canal Dev sont désormais produits depuis la branche `dev`.
+
 ## [v1.2026.26] - 2026-10-07
 
 ### Fixed

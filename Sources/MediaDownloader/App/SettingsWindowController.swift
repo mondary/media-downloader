@@ -64,15 +64,16 @@ enum MediaSettingsLanguage: String, CaseIterable, Identifiable {
 }
 
 private enum MediaSettingsSection: String, CaseIterable, Identifiable {
-    case general, download, authentication, shortcuts, about, support, library
+    case general, download, authentication, shortcuts, credits, library, support, about
     var id: String { rawValue }
-    var group: String { self == .about || self == .support || self == .library ? "PK PROJECTS" : "APP" }
+    var group: String { self == .credits || self == .about || self == .support || self == .library ? "PK PROJECTS" : "APP" }
     var icon: String {
         switch self {
         case .general: "slider.horizontal.3"
         case .download: "arrow.down.to.line"
         case .authentication: "person.crop.circle.badge.key"
         case .shortcuts: "keyboard"
+        case .credits: "text.book.closed"
         case .about: "info.circle"
         case .support: "heart.fill"
         case .library: "square.grid.2x2"
@@ -84,9 +85,10 @@ private enum MediaSettingsSection: String, CaseIterable, Identifiable {
         case .download: language.text("Téléchargement", "Download")
         case .authentication: language.text("Authentification", "Authentication")
         case .shortcuts: language.text("Raccourcis", "Shortcuts")
+        case .credits: language.text("Crédits", "Credits")
         case .about: language.text("À propos", "About")
-        case .support: language.text("Support", "Support")
-        case .library: "Project Library"
+        case .support: language.text("Soutenir", "Support")
+        case .library: language.text("Bibliothèque de projets", "Project Library")
         }
     }
 }
@@ -242,6 +244,8 @@ private struct SettingsRootView: View {
             ScrollView { VStack(alignment: .leading, spacing: 20) { accessibilitySection; shortcutsSection }.padding(24) }
         case .about:
             aboutSection
+        case .credits:
+            creditsSection
         case .support:
             supportSection
         case .library:
@@ -308,7 +312,6 @@ private struct SettingsRootView: View {
                 }
                 .frame(maxWidth: .infinity)
                 updatesCard.frame(maxWidth: 480)
-                creditsSection.frame(maxWidth: 480)
             }
             .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 24)
             .frame(maxWidth: 720).frame(maxWidth: .infinity)
@@ -339,38 +342,91 @@ private struct SettingsRootView: View {
         }
     }
 
-    private var creditsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(language.text("Crédits", "Credits")).font(.headline)
-            Text(language.text("Outils et dépendances utilisés", "Tools and dependencies used"))
-                .font(.system(size: 12, weight: .semibold))
-            creditLink("yt-dlp", detail: language.text("Téléchargement des médias", "Media downloading"), url: "https://github.com/yt-dlp/yt-dlp")
-            creditLink("FFmpeg", detail: language.text("Conversion, extraction et découpe vidéo", "Video conversion, extraction and trimming"), url: "https://ffmpeg.org/")
-            creditLink("Sparkle", detail: language.text("Mises à jour de l’app macOS", "macOS app updates"), url: "https://github.com/sparkle-project/Sparkle")
-            Divider().padding(.vertical, 3)
-            Text(language.text("Projet amont", "Upstream project")).font(.system(size: 12, weight: .semibold))
-            creditLink("pixel-point/media-downloader", detail: language.text("Projet d’origine adapté pour PKMediaDownloader", "Original project adapted for PKMediaDownloader"), url: "https://github.com/pixel-point/media-downloader")
-            Text(language.text(
-                "Cobalt est une solution externe facultative, ouverte dans le navigateur uniquement à la demande.",
-                "Cobalt is an optional external fallback, opened in the browser only when requested."
-            )).font(.caption).foregroundStyle(.secondary).padding(.top, 2)
-        }
-        .padding(16)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.025)))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.primary.opacity(0.08), lineWidth: 1))
+    private struct CreditEntry: Identifiable {
+        let id: String
+        let icon: String
+        let name: String
+        let author: String
+        let use: String
+        let license: String?
+        let tint: Color
+        let url: URL
     }
 
-    private func creditLink(_ name: String, detail: String, url: String) -> some View {
-        Link(destination: URL(string: url)!) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(name).font(.system(size: 12, weight: .medium)).foregroundStyle(.primary)
-                Text("— \(detail)").font(.system(size: 12)).foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-                Image(systemName: "arrow.up.right").font(.system(size: 9)).foregroundStyle(.tertiary)
+    private var toolCredits: [CreditEntry] {
+        [
+            CreditEntry(id: "yt-dlp", icon: "arrow.down.circle", name: "yt-dlp", author: "yt-dlp team", use: language.text("Téléchargement des médias", "Media downloading"), license: nil, tint: .blue, url: URL(string: "https://github.com/yt-dlp/yt-dlp")!),
+            CreditEntry(id: "ffmpeg", icon: "film", name: "FFmpeg", author: "FFmpeg project", use: language.text("Conversion, extraction et découpe vidéo", "Video conversion, extraction and trimming"), license: nil, tint: .orange, url: URL(string: "https://ffmpeg.org/")!),
+            CreditEntry(id: "sparkle", icon: "sparkles", name: "Sparkle", author: "Sparkle project", use: language.text("Mises à jour de l’app macOS", "macOS app updates"), license: "MIT", tint: .purple, url: URL(string: "https://github.com/sparkle-project/Sparkle")!)
+        ]
+    }
+
+    private var upstreamCredits: [CreditEntry] {
+        [
+            CreditEntry(id: "upstream", icon: "arrow.triangle.branch", name: "pixel-point/media-downloader", author: "pixel-point", use: language.text("Projet d’origine adapté pour PKMediaDownloader", "Original project adapted for PKMediaDownloader"), license: nil, tint: .teal, url: URL(string: "https://github.com/pixel-point/media-downloader")!),
+            CreditEntry(id: "cobalt", icon: "safari", name: "Cobalt", author: "Cobalt project", use: language.text("Service de secours externe, ouvert dans le navigateur à la demande", "Optional external fallback, opened in the browser on request"), license: nil, tint: .indigo, url: URL(string: "https://cobalt.tools/")!)
+        ]
+    }
+
+    private var creditsSection: some View {
+        ScrollView {
+            VStack(spacing: 18) {
+                VStack(spacing: 8) {
+                    Image(systemName: "text.book.closed.fill")
+                        .font(.system(size: 36, weight: .medium))
+                        .foregroundStyle(Color.accentColor)
+                    Text(language.text("Crédits & inspirations", "Credits & inspirations"))
+                        .font(.system(size: 20, weight: .bold))
+                    Text(language.text("Les outils utilisés et les projets qui ont inspiré cette application.", "The tools used and projects that inspired this app."))
+                        .font(.system(size: 13)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                }
+                .padding(.top, 36).padding(.bottom, 8)
+
+                creditGroup(title: language.text("Outils et dépendances utilisés", "Tools and dependencies used"), entries: toolCredits)
+                creditGroup(title: language.text("Projet amont et service facultatif", "Upstream project and optional service"), entries: upstreamCredits)
+                Text(language.text(
+                    "Cobalt est externe et facultatif : aucune URL n’y est envoyée automatiquement. Les crédits ne remplacent pas les notices de licence.",
+                    "Cobalt is an optional external service: URLs are never sent automatically. These credits do not replace license notices."
+                )).font(.caption).foregroundStyle(.secondary).frame(maxWidth: 480, alignment: .leading)
             }
-            .contentShape(Rectangle())
+            .padding(.horizontal, 24).padding(.bottom, 28)
+            .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.plain)
+    }
+
+    private func creditGroup(title: String, entries: [CreditEntry]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title).font(.system(size: 13, weight: .semibold))
+            VStack(spacing: 0) {
+                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
+                    if index > 0 { Divider().padding(.leading, 58) }
+                    Link(destination: entry.url) {
+                        HStack(spacing: 12) {
+                            Image(systemName: entry.icon).font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(entry.tint).frame(width: 36, height: 36)
+                                .background(entry.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(entry.name).font(.system(size: 12, weight: .semibold))
+                                    if let license = entry.license {
+                                        Text(license).font(.system(size: 9, weight: .medium, design: .monospaced)).foregroundStyle(.secondary)
+                                            .padding(.horizontal, 5).padding(.vertical, 2).background(Color.primary.opacity(0.06), in: Capsule())
+                                    }
+                                }
+                                Text(entry.author).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                                Text(entry.use).font(.system(size: 11)).foregroundStyle(.secondary)
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: "arrow.up.right").font(.system(size: 10)).foregroundStyle(.tertiary)
+                        }
+                        .padding(.horizontal, 14).padding(.vertical, 9).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .frame(maxWidth: 480, alignment: .leading)
     }
 
     private var updatesCard: some View {
@@ -679,24 +735,6 @@ private struct SettingsRootView: View {
 
     // MARK: - Support and Project Library
 
-    private var linksSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(language.text("Liens", "Links")).font(.headline)
-            Link(destination: URL(string: "https://github.com/pixel-point/media-downloader")!) {
-                Label(language.text("Projet d’origine sur GitHub", "Original project on GitHub"), systemImage: "arrow.up.right.square")
-                    .font(.subheadline)
-            }
-            Link(destination: URL(string: "https://cobalt.tools/")!) {
-                Label(language.text("Cobalt — solution de secours dans le navigateur", "Cobalt — browser fallback when a download fails"), systemImage: "lifepreserver")
-                    .font(.subheadline)
-            }
-            Link(destination: URL(string: "https://github.com/imputnet/cobalt")!) {
-                Label("Cobalt — GitHub", systemImage: "arrow.up.right.square").font(.subheadline)
-            }
-        }
-        .padding(14).background(cardBackground)
-    }
-
     private var supportSection: some View {
         ScrollView {
             VStack(spacing: 0) {
@@ -747,7 +785,6 @@ private struct SettingsRootView: View {
                         supportLink(icon: "person.crop.circle", title: language.text("PK sur GitHub", "PK on GitHub"), subtitle: language.text("Découvrir les autres projets", "Discover other projects"), url: "https://github.com/mondary")
                     }
                     .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
-                    linksSection
                 }
                 .frame(maxWidth: 480).padding(.bottom, 32)
             }
@@ -761,7 +798,7 @@ private struct SettingsRootView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "square.grid.2x2.fill").font(.system(size: 36, weight: .medium))
                         .foregroundStyle(Color.accentColor)
-                    Text("Project Library").font(.system(size: 20, weight: .bold))
+                    Text(language.text("Bibliothèque de projets", "Project Library")).font(.system(size: 20, weight: .bold))
                     Text(language.text("Découvrez les autres outils et projets que je développe.", "Discover the other tools and projects I build."))
                         .font(.system(size: 13)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }

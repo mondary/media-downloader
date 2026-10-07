@@ -2,7 +2,7 @@ name: Sparkle Dev build
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
     paths:
       - Package.swift
       - Sources/**
@@ -24,6 +24,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Build Dev app
         env:
@@ -44,7 +46,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create dev --prerelease --title "PKMediaDownloader Dev" --notes "Latest automatic Dev build from main." || true
+          gh release create dev --prerelease --title "PKMediaDownloader Dev" --notes "Latest automatic Dev build from the dev branch." || true
           gh release upload dev PKMediaDownloader-dev.zip -R mondary/media-downloader --clobber
 
       - name: Sign Dev appcast

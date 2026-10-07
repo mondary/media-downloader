@@ -31,7 +31,7 @@ def main():
       <sparkle:version>{bundle_version}</sparkle:version>
       <sparkle:shortVersionString>{short_version}</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>{minimum_macos}</sparkle:minimumSystemVersion>
-      <description>Automatic Dev build from main. Installed silently for the Dev channel.</description>
+      <description>Automatic Dev build from the dev branch. Installed silently for the Dev channel.</description>
       <enclosure url="https://github.com/{repo}/releases/download/dev/{app_name}-dev.zip" type="application/octet-stream" sparkle:edSignature="{signature}" length="{len(data)}" />
     </item>
   </channel>
@@ -43,4 +43,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
