@@ -129,11 +129,21 @@ final class MenuBarController {
 
     private func rebuildMenu() {
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "PKMediaDownloader", action: nil, keyEquivalent: ""))
+        let language = MediaSettingsLanguage.current
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
+        let versionItem = NSMenuItem(title: "PKMediaDownloader v\(version)", action: nil, keyEquivalent: "")
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Open Main Window", action: #selector(openMainWindow), keyEquivalent: "o"))
+        menu.addItem(NSMenuItem(title: language.text("Ouvrir la fenêtre principale", "Open Main Window"), action: #selector(openMainWindow), keyEquivalent: "o"))
+        menu.addItem(NSMenuItem(title: language.text("Réglages…", "Settings…"), action: #selector(openSettings), keyEquivalent: ","))
+        let supportItem = NSMenuItem(title: language.text("Soutenir sur Ko-fi ↗", "Support on Ko-fi ↗"), action: #selector(openSupportPage), keyEquivalent: "")
+        menu.addItem(supportItem)
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: language.text("Quitter", "Quit"), action: #selector(quitApp), keyEquivalent: "q"))
+        for item in menu.items where item.action != nil {
+            item.target = self
+        }
         statusMenu = menu
     }
 
@@ -153,6 +163,15 @@ final class MenuBarController {
         NotificationCenter.default.post(name: .showMainWindow, object: nil)
     }
 
+    @objc private func openSettings() {
+        NSApp.activate(ignoringOtherApps: true)
+        NotificationCenter.default.post(name: .showSettings, object: nil)
+    }
+
+    @objc private func openSupportPage() {
+        NSWorkspace.shared.open(URL(string: "https://ko-fi.com/pouark")!)
+    }
+
     @objc private func quitApp() {
         NSApp.terminate(nil)
     }
@@ -160,6 +179,7 @@ final class MenuBarController {
 
 extension Notification.Name {
     static let showMainWindow = Notification.Name("PKMediaDownloaderShowMainWindow")
+    static let showSettings = Notification.Name("PKMediaDownloaderShowSettings")
     static let downloadStarted = Notification.Name("PKMediaDownloaderDownloadStarted")
     static let downloadProgressed = Notification.Name("PKMediaDownloaderDownloadProgressed")
     static let downloadCompleted = Notification.Name("PKMediaDownloaderDownloadCompleted")

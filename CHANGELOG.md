@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.30] - 2026-10-07
+
+### Added
+- Menu contextuel de la barre des menus avec accès aux Réglages, au soutien Ko-fi et à la version installée.
+
 ## [v1.2026.29] - 2026-10-07
 
 ### Fixed

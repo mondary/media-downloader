@@ -36,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
     private var hotKeyObserver: NSObjectProtocol?
     private var mainWindowObserver: NSObjectProtocol?
+    private var settingsObserver: NSObjectProtocol?
     private let menuBarController = MenuBarController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -61,6 +62,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ) { [weak self] _ in
             Task { @MainActor [weak self] in
                 self?.presentReadyWindow(activate: true)
+            }
+        }
+
+        settingsObserver = NotificationCenter.default.addObserver(
+            forName: .showSettings,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.model.showSettings()
             }
         }
 
