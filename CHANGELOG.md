@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.29] - 2026-10-07
+
+### Fixed
+- Publication de l’appcast Dev depuis la dernière version de `main`, sans rebase conflictuel.
+
 ## [v1.2026.28] - 2026-10-07
 
 ### Changed

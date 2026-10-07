@@ -49,6 +49,11 @@ jobs:
           gh release create dev --prerelease --title "PKMediaDownloader Dev" --notes "Latest automatic Dev build from the dev branch." || true
           gh release upload dev PKMediaDownloader-dev.zip -R mondary/media-downloader --clobber
 
+      - name: Check out latest main for appcast
+        run: |
+          git fetch origin main
+          git checkout --detach origin/main
+
       - name: Sign Dev appcast
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
@@ -67,6 +72,4 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add appcast-dev.xml
           git commit -m "MAJ: appcast dev media downloader" || exit 0
-          git fetch origin main
-          git rebase origin/main
           git push "https://x-access-token:${GH_TOKEN}@github.com/mondary/media-downloader.git" HEAD:main
