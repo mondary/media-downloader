@@ -6,13 +6,13 @@
     <description>Latest Dev build for PKMediaDownloader.</description>
     <language>en</language>
     <item>
-      <title>PKMediaDownloader 1.2026.29-dev.2031</title>
-      <pubDate>Wed, 07 Oct 2026 20:33:10 +0000</pubDate>
-      <sparkle:version>1791405070</sparkle:version>
-      <sparkle:shortVersionString>1.2026.29-dev.2031</sparkle:shortVersionString>
+      <title>PKMediaDownloader 1.2026.30-dev.2054</title>
+      <pubDate>Wed, 07 Oct 2026 20:56:29 +0000</pubDate>
+      <sparkle:version>1791406474</sparkle:version>
+      <sparkle:shortVersionString>1.2026.30-dev.2054</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
       <description>Automatic Dev build from the dev branch. Installed silently for the Dev channel.</description>
-      <enclosure url="https://github.com/mondary/media-downloader/releases/download/dev/PKMediaDownloader-dev.zip" type="application/octet-stream" sparkle:edSignature="aj/baAlFZ6dli2VKJY1UKhPu3/Su17pi2rOB5wUWy1kZVYGRrcLHuX347o9cbs/ogapYk0bCW8WwwNua793TBw==" length="5595981" />
+      <enclosure url="https://github.com/mondary/media-downloader/releases/download/dev/PKMediaDownloader-dev.zip" type="application/octet-stream" sparkle:edSignature="QmUovAnbLTOFYzOgWCkaFv10PxXirhzX46EOFAhIm5JtZZeZAjHz9Lf8MakYHKyf75w+ww2ZxB12EQFKy/kSBA==" length="5597923" />
     </item>
   </channel>
 </rss>
