@@ -167,7 +167,11 @@ if [[ "$SIGNED_MODE" == "true" ]]; then
   xcrun stapler validate "$APP_BUNDLE"
   spctl -a -vvv --type exec "$APP_BUNDLE"
 else
-  codesign --force --deep --options runtime --sign - "$APP_BUNDLE"
+  # An ad-hoc signature has no Team ID. Hardened Runtime's library validation
+  # then rejects Sparkle.framework (whose upstream signature has a different
+  # Team ID) at launch. Keep unsigned Dev builds ad hoc but without Hardened
+  # Runtime; signed Developer ID releases above retain runtime hardening.
+  codesign --force --deep --sign - "$APP_BUNDLE"
 fi
 
 rm -f "$RELEASE_ZIP"

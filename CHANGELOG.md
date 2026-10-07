@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet sont documentées ici.
 Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 (Added / Changed / Fixed).
 
+## [v1.2026.26] - 2026-10-07
+
+### Fixed
+- Builds Dev ad hoc sans Hardened Runtime afin que dyld charge Sparkle.framework (pas de Team ID commun pour la validation des bibliothèques).
+
 ## [v1.2026.25] - 2026-10-07
 
 ### Fixed
